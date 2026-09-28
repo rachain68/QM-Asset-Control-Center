@@ -43,10 +43,13 @@ export function calculateDepreciation(
   const annualDepreciation = amountThb > 0 ? amountThb / safeLife : 0;
 
   const rawAccumulated = annualDepreciation * ageYears;
-  const accumulatedDepreciationThb = Math.min(amountThb, Math.max(0, rawAccumulated));
+  const calculatedAccumulated = Math.min(amountThb, Math.max(0, rawAccumulated));
+  const calculatedBookValue = Math.max(0, amountThb - calculatedAccumulated);
 
-  const calculatedBookValue = Math.max(0, amountThb - accumulatedDepreciationThb);
   const currentBookValueThb = overrideBookValueThb !== null ? overrideBookValueThb : calculatedBookValue;
+  const accumulatedDepreciationThb = overrideBookValueThb !== null
+    ? Math.max(0, amountThb - overrideBookValueThb)
+    : calculatedAccumulated;
 
   const isFullyDepreciated = ageYears >= safeLife || currentBookValueThb === 0;
   const remainingLifeYears = Math.max(0, Math.round((safeLife - ageYears) * 10) / 10);
