@@ -19,11 +19,14 @@ import { AddAssetModal } from './components/AddAssetModal';
 import { EditAssetModal } from './components/EditAssetModal';
 import { DepreciationModal } from './components/DepreciationModal';
 import { AssetHistoryModal } from './components/AssetHistoryModal';
-import { CheckCircle2, Factory } from 'lucide-react';
+import { LoginView } from './components/LoginView';
+import { UserManagementView } from './components/UserManagementView';
+import { useAuth, AuthProvider } from './contexts/AuthContext';
+import { CheckCircle2, Factory, Loader2 } from 'lucide-react';
 
-export function App() {
+export function AppContent() {
+  const { isAuthenticated, currentUser } = useAuth();
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [currentUser, setCurrentUserRole] = useState<User>(getCurrentUser());
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [depreciationAsset, setDepreciationAsset] = useState<Asset | null>(null);
@@ -37,18 +40,14 @@ export function App() {
   };
 
   useEffect(() => {
-    loadAssets();
-  }, []);
+    if (isAuthenticated) {
+      loadAssets();
+    }
+  }, [isAuthenticated]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
-  };
-
-  const handleUserChange = (user: User) => {
-    setCurrentUserRole(user);
-    setCurrentUser(user);
-    showToast(`เปลี่ยนสิทธิ์เป็น: ${user.name} (${user.role})`);
   };
 
   const handleSaveNewAsset = async (
@@ -114,19 +113,19 @@ export function App() {
 
   const waitingCount = assets.filter((a) => a.reviewStatus === 'Waiting List').length;
 
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-surface text-on-surface antialiased font-sans">
-      {/* Precision Responsive Header */}
       <Header
-        currentUser={currentUser}
-        onUserChange={handleUserChange}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         waitingListCount={waitingCount}
       />
 
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-5 right-5 z-50 bg-[#006194] text-white px-4 py-3 rounded shadow-xl flex items-center space-x-2.5 border border-sky-400 animate-bounce">
           <CheckCircle2 className="w-5 h-5 text-sky-200 shrink-0" />
@@ -134,16 +133,13 @@ export function App() {
         </div>
       )}
 
-      {/* Main Responsive Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
-        {activeTab === 'dashboard' && (
-          <DashboardView assets={assets} onNavigate={setActiveTab} />
-        )}
-
+        {activeTab === 'dashboard' && <DashboardView assets={assets} onNavigate={setActiveTab} />}
+        
         {activeTab === 'masterlist' && (
           <MasterListView
             assets={assets}
-            currentUser={currentUser}
+            currentUser={currentUser!}
             onEditAsset={(asset) => setEditingAsset(asset)}
             onOpenDepreciation={(asset) => setDepreciationAsset(asset)}
             onOpenHistory={(asset) => setHistoryAsset(asset)}
@@ -155,7 +151,7 @@ export function App() {
         {activeTab === 'waitinglist' && (
           <WaitingListReviewView
             assets={assets}
-            currentUser={currentUser}
+            currentUser={currentUser!}
             onApproveAsset={handleApproveAsset}
           />
         )}
@@ -163,6 +159,8 @@ export function App() {
         {activeTab === 'audittrail' && <AuditTrailView />}
 
         {activeTab === 'automail' && <AutoMailSetupView />}
+
+        {activeTab === 'users' && currentUser?.role === 'Level 2 Admin' && <UserManagementView />}
       </main>
 
       {/* Precision Industrial Footer */}
@@ -206,6 +204,14 @@ export function App() {
         onClose={() => setHistoryAsset(null)}
       />
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

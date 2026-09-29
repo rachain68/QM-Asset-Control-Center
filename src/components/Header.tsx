@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { User } from '../types/asset';
-import { MOCK_USERS } from '../data/mockAssets';
 import {
   Database,
   ShieldCheck,
@@ -13,12 +11,13 @@ import {
   Menu,
   X,
   Factory,
+  LogOut,
+  Users
 } from 'lucide-react';
 import { Button } from './common/Button';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
-  currentUser: User;
-  onUserChange: (user: User) => void;
   activeTab: string;
   onTabChange: (tab: string) => void;
   onOpenAddModal: () => void;
@@ -26,14 +25,14 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  currentUser,
-  onUserChange,
   activeTab,
   onTabChange,
   onOpenAddModal,
   waitingListCount,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { currentUser, logout } = useAuth();
+  const isAdmin = currentUser?.role === 'Level 2 Admin';
 
   const navItems = [
     {
@@ -63,6 +62,15 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <Mail className="w-4 h-4 text-purple-600" />,
     },
   ];
+
+  if (isAdmin) {
+    navItems.push({
+      id: 'users',
+      label: 'User Setup',
+      icon: <Users className="w-4 h-4 text-amber-600" />,
+      badge: undefined
+    });
+  }
 
   const handleTabClick = (tabId: string) => {
     onTabChange(tabId);
@@ -94,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Main Header Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 "> {/*gap-x-6 lg:gap-x-12*/}
+        <div className="flex items-center justify-between h-14 sm:h-16 ">
           {/* Logo & Platform Title */}
           <div className="flex items-center space-x-3 shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded bg-[#006194] text-white flex items-center justify-center shadow-xs">
@@ -105,9 +113,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-[10px] font-bold tracking-widest text-[#006194] uppercase">
                   QM Asset Control
                 </span>
-                {/* <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 font-semibold border border-sky-200">
-                  Semiconductor
-                </span> */}
               </div>
               <h1 className="text-sm sm:text-base font-bold text-[#0b1c30] tracking-tight">
                 Asset Control Center
@@ -143,7 +148,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action Section */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Quick Add Asset Button */}
             <Button
               variant="primary"
               size="sm"
@@ -154,31 +158,28 @@ export const Header: React.FC<HeaderProps> = ({
               Add Asset
             </Button>
 
-            {/* Role Switcher Pill */}
-            <div className="hidden md:flex items-center space-x-1.5 bg-slate-50 px-2.5 py-1 rounded border border-slate-200 text-xs">
+            {/* Current User Info */}
+            <div className="hidden md:flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded border border-slate-200">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <select
-                value={currentUser.id}
-                onChange={(e) => {
-                  const selected = MOCK_USERS.find((u) => u.id === e.target.value);
-                  if (selected) onUserChange(selected);
-                }}
-                className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer"
-                title="สลับสิทธิ์การใช้งาน (User Role)"
-              >
-                {MOCK_USERS.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} ({u.role.replace('Level ', 'L')})
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-slate-800 leading-none">{currentUser?.name}</span>
+                <span className="text-[10px] text-slate-500">{currentUser?.role}</span>
+              </div>
             </div>
+
+            {/* Logout Button */}
+            <button
+              onClick={logout}
+              title="ออกจากระบบ"
+              className="hidden md:flex p-1.5 rounded text-slate-500 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
 
             {/* Mobile Hamburger Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 focus:outline-none"
-              aria-label="Toggle Navigation Menu"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -189,26 +190,21 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile & Tablet Drawer Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white/98 backdrop-blur-md px-4 pt-3 pb-5 shadow-xl animate-fadeIn">
-          {/* Mobile User Role Selector */}
+          {/* Mobile User Info */}
           <div className="mb-3 p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-xs">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span className="font-semibold text-slate-700">Role:</span>
+            <div className="flex items-center space-x-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-slate-800">{currentUser?.name}</span>
+                <span className="text-xs text-slate-500">{currentUser?.role}</span>
+              </div>
             </div>
-            <select
-              value={currentUser.id}
-              onChange={(e) => {
-                const selected = MOCK_USERS.find((u) => u.id === e.target.value);
-                if (selected) onUserChange(selected);
-              }}
-              className="bg-white border border-slate-300 rounded px-2 py-1 text-xs font-semibold text-slate-800"
+            <button
+              onClick={logout}
+              className="p-1.5 rounded text-red-600 bg-red-50 hover:bg-red-100 border border-red-200"
             >
-              {MOCK_USERS.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.role})
-                </option>
-              ))}
-            </select>
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Mobile Quick Add Button */}
