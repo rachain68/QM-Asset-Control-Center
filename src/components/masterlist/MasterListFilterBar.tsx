@@ -65,6 +65,16 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
           >
             Import Excel
           </Button>
+
+          {/* Download Template Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onExportExcel}
+            title="Download Template (ใช้ไฟล์ Export เป็น Template สำหรับ Import)"
+          >
+            Download Template
+          </Button>
           <input
             type="file"
             ref={fileInputRef}

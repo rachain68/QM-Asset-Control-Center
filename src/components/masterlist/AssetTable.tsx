@@ -76,7 +76,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 text-xs">
-          {assets.map((asset) => {
+          {assets.map((asset, index) => {
             const dep = calculateDepreciation(
               asset.amountThb,
               asset.receivedDate,
@@ -92,7 +92,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
               >
                 {/* Index No */}
                 <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
-                  {asset.itemNo}
+                  {index + 1}
                 </td>
 
                 {/* Machine Name & Serial */}

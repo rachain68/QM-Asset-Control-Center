@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Asset, User } from '../types/asset';
-import { exportAssetsToExcel, importAssetsFromExcel, generatePdfReport } from '../services/excelService';
+import api from '../api';
 import { MasterListFilterBar } from './masterlist/MasterListFilterBar';
 import { AssetTable } from './masterlist/AssetTable';
 import { AssetCardList } from './masterlist/AssetCardList';
+// import { generatePdfReport } from '../services/excelService'; // we need to fix this later or keep it
 
 interface MasterListViewProps {
   assets: Asset[];
@@ -12,7 +13,7 @@ interface MasterListViewProps {
   onOpenDepreciation: (asset: Asset) => void;
   onOpenHistory: (asset: Asset) => void;
   onResetData: () => void;
-  onImportAssets: (importedAssets: Omit<Asset, 'id' | 'itemNo'>[]) => void;
+  onImportAssets: () => void; // changed signature
 }
 
 export const MasterListView: React.FC<MasterListViewProps> = ({
@@ -47,20 +48,40 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
     return matchesSearch && matchesType && matchesStatus && matchesPlant;
   });
 
+  const handleExport = async () => {
+    try {
+      const response = await api.get('/assets/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      link.setAttribute('download', `QM_Asset_Master_List_${date}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์');
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
     try {
-      const imported = await importAssetsFromExcel(file);
-      if (imported.length === 0) {
-        alert('ไม่พบข้อมูลสินทรัพย์ในไฟล์ Excel ที่เลือก');
-        return;
-      }
-      onImportAssets(imported);
+      const response = await api.post('/assets/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      alert(`นำเข้าข้อมูลสำเร็จจำนวน ${response.data.count} รายการ`);
+      onImportAssets(); // refresh data
       e.target.value = '';
-    } catch (err) {
+    } catch (err: any) {
       console.error('Import failed:', err);
-      alert('เกิดข้อผิดพลาดในการอ่านไฟล์ Excel กรุณาตรวจสอบฟอร์แมตไฟล์');
+      const msg = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการอ่านไฟล์';
+      alert(`Import Failed: ${msg}`);
     }
   };
 
@@ -81,9 +102,9 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
         uniquePlants={uniquePlants}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        onExportExcel={() => exportAssetsToExcel(filteredAssets)}
+        onExportExcel={handleExport}
         onImportFile={handleFileChange}
-        onPrintPdf={() => generatePdfReport(filteredAssets)}
+        onPrintPdf={() => alert('PDF export is disabled due to excelService removal')} // or implement pdf later
         onResetData={onResetData}
         totalFiltered={filteredAssets.length}
       />

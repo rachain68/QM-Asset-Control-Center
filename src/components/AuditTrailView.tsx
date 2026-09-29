@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { AuditLog } from '../types/asset';
 import { getAuditLogs } from '../services/auditService';
 import { History, Search, Download, Clock } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { Button } from './common/Button';
 
 export const AuditTrailView: React.FC = () => {
@@ -23,21 +22,7 @@ export const AuditTrailView: React.FC = () => {
   });
 
   const exportAuditLogsToExcel = () => {
-    const data = filteredLogs.map((l) => ({
-      'Log ID': l.id,
-      Timestamp: l.timestamp,
-      'Asset Name': l.assetName,
-      'Asset No': l.assetNo,
-      Action: l.action,
-      'Performed By': l.performedBy,
-      Role: l.performedByRole,
-      Details: l.details,
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Audit Logs');
-    XLSX.writeFile(workbook, 'QM_Asset_Audit_Logs.xlsx');
+    alert('Export Audit Logs is currently disabled as we move to the backend API.');
   };
 
   const getActionBadge = (action: string) => {

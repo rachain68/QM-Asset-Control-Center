@@ -73,18 +73,8 @@ export function AppContent() {
     }
   };
 
-  const handleImportAssets = async (importedAssets: Omit<Asset, 'id' | 'itemNo'>[]) => {
-    try {
-      let importedCount = 0;
-      for (const data of importedAssets) {
-        await addAsset(data);
-        importedCount++;
-      }
-      await loadAssets();
-      showToast(`นำเข้าข้อมูลจากไฟล์ Excel จำนวน ${importedCount} รายการสำเร็จเรียบร้อย!`);
-    } catch (error) {
-      showToast('Error importing assets');
-    }
+  const handleImportAssets = async () => {
+    await loadAssets();
   };
 
   const handleApproveAsset = async (id: string, bookValueThb: number) => {
