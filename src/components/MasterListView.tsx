@@ -33,13 +33,16 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
 
   // Filter Assets
   const filteredAssets = assets.filter((asset) => {
+    // Only show Active or items that are not in Waiting List
+    if (asset.reviewStatus === 'Waiting List') return false;
+
     const matchesSearch =
-      asset.machineName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.assetNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.serialNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.owner.toLowerCase().includes(searchTerm.toLowerCase());
+      (asset.machineName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (asset.brand || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (asset.model || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (asset.assetNo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (asset.serialNo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (asset.owner || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesType = selectedType === 'ALL' || asset.machineType === selectedType;
     const matchesStatus = selectedStatus === 'ALL' || asset.status === selectedStatus;

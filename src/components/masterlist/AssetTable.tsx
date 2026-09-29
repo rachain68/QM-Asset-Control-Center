@@ -22,7 +22,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
 }) => {
   const isEditable = (asset: Asset) => {
     if (currentUser.role === 'Level 2 Admin') return true;
-    return asset.owner.toLowerCase().trim() === currentUser.name.toLowerCase().trim();
+    return (asset.owner || '').toLowerCase().trim() === (currentUser.name || '').toLowerCase().trim();
   };
 
   if (assets.length === 0) {

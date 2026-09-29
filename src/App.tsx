@@ -78,10 +78,16 @@ export function AppContent() {
   };
 
   const handleApproveAsset = async (id: string, bookValueThb: number) => {
+    console.log('handleApproveAsset called with id:', id, 'val:', bookValueThb);
     const assetToApprove = assets.find((a) => a.id === id);
-    if (!assetToApprove) return;
+    if (!assetToApprove) {
+      console.error('Asset not found in state:', id);
+      return;
+    }
     try {
+      console.log('Calling storage approveWaitingListAsset...');
       const approved = await approveWaitingListAsset(id, bookValueThb, assetToApprove);
+      console.log('Result from storage:', approved);
       if (approved) {
         await loadAssets();
         showToast(
@@ -89,6 +95,7 @@ export function AppContent() {
         );
       }
     } catch (error) {
+      console.error('Error approving asset in App.tsx:', error);
       showToast('Error approving asset');
     }
   };
