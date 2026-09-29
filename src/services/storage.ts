@@ -1,34 +1,31 @@
 import { Asset, User } from '../types/asset';
-import { INITIAL_ASSETS, MOCK_USERS } from '../data/mockAssets';
+import { MOCK_USERS, INITIAL_ASSETS } from '../data/mockAssets';
 import { calculateAgeInYears, convertToThb } from './depreciation';
 import { logActivity } from './auditService';
+import api from '../api';
 
-const STORAGE_KEY = 'qm_asset_control_center_assets_v1';
 const CURRENT_USER_KEY = 'qm_asset_control_center_user_v1';
 
-export function getStoredAssets(): Asset[] {
+export async function getStoredAssets(): Promise<Asset[]> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_ASSETS));
-      return INITIAL_ASSETS;
+    const response = await api.get('/assets');
+    const assets: Asset[] = response.data;
+    
+    // Fallback to initial assets if db is empty just for preview purposes
+    if (assets.length === 0) {
+      return INITIAL_ASSETS.map((asset) => ({
+        ...asset,
+        ageYr: calculateAgeInYears(asset.receivedDate),
+      }));
     }
-    const assets: Asset[] = JSON.parse(raw);
+
     return assets.map((asset) => ({
       ...asset,
       ageYr: calculateAgeInYears(asset.receivedDate),
     }));
   } catch (err) {
-    console.error('Failed to load assets from storage:', err);
-    return INITIAL_ASSETS;
-  }
-}
-
-export function saveAssets(assets: Asset[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(assets));
-  } catch (err) {
-    console.error('Failed to save assets:', err);
+    console.error('Failed to load assets from backend:', err);
+    return [];
   }
 }
 
@@ -50,112 +47,101 @@ export function setCurrentUser(user: User): void {
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
 }
 
-export function addAsset(newAssetData: Omit<Asset, 'id' | 'itemNo' | 'ageYr' | 'amountThb' | 'lastUpdated'>): Asset {
-  const assets = getStoredAssets();
-  const nextItemNo = assets.length > 0 ? Math.max(...assets.map((a) => a.itemNo)) + 1 : 1;
-  const id = `ast-${Date.now()}`;
+export async function addAsset(newAssetData: Omit<Asset, 'id' | 'itemNo' | 'ageYr' | 'amountThb' | 'lastUpdated'>): Promise<Asset> {
   const amountThb = convertToThb(newAssetData.invCost, newAssetData.currency, newAssetData.exchangeRateToThb);
-  const ageYr = calculateAgeInYears(newAssetData.receivedDate);
   const currentUser = getCurrentUser();
 
-  const fullAsset: Asset = {
+  const fullAsset = {
     ...newAssetData,
-    id,
-    itemNo: nextItemNo,
     amountThb,
-    ageYr,
-    lastUpdated: new Date().toISOString().split('T')[0],
+    reviewStatus: 'Waiting List',
   };
 
-  const updatedAssets = [fullAsset, ...assets];
-  saveAssets(updatedAssets);
+  try {
+    const response = await api.post('/assets', fullAsset);
+    const id = response.data.id || response.data.assetId;
+    
+    // Automatically Record Audit Log
+    logActivity(
+      id,
+      fullAsset.machineName,
+      fullAsset.assetNo,
+      'CREATED',
+      currentUser.name,
+      currentUser.role,
+      `ลงทะเบียนสินทรัพย์ใหม่ (${fullAsset.machineName}) เข้าสู่ระบบ (${fullAsset.sourceSystem})`
+    );
 
-  // Automatically Record Audit Log
-  logActivity(
-    id,
-    fullAsset.machineName,
-    fullAsset.assetNo,
-    'CREATED',
-    currentUser.name,
-    currentUser.role,
-    `ลงทะเบียนสินทรัพย์ใหม่ (${fullAsset.machineName}) เข้าสู่ระบบ (${fullAsset.sourceSystem})`
-  );
-
-  return fullAsset;
+    return { ...fullAsset, id, itemNo: 0, ageYr: calculateAgeInYears(newAssetData.receivedDate), lastUpdated: new Date().toISOString() } as Asset;
+  } catch (error) {
+    console.error('Error adding asset to backend:', error);
+    throw error;
+  }
 }
 
-export function updateAsset(updatedAsset: Asset): Asset {
-  const assets = getStoredAssets();
+export async function updateAsset(updatedAsset: Asset): Promise<Asset> {
   const currentUser = getCurrentUser();
   const amountThb = convertToThb(updatedAsset.invCost, updatedAsset.currency, updatedAsset.exchangeRateToThb);
-  const ageYr = calculateAgeInYears(updatedAsset.receivedDate);
 
-  const existing = assets.find((a) => a.id === updatedAsset.id);
-
-  const processed: Asset = {
+  const processed = {
     ...updatedAsset,
     amountThb,
-    ageYr,
-    lastUpdated: new Date().toISOString().split('T')[0],
   };
 
-  const updatedList = assets.map((a) => (a.id === processed.id ? processed : a));
-  saveAssets(updatedList);
-
-  // Record Audit Log for Updates
-  if (existing) {
-    const details = existing.status !== processed.status
-      ? `เปลี่ยนสถานะสภาพเครื่องจาก ${existing.status} เป็น ${processed.status}`
-      : `แก้ไขรายละเอียดสินทรัพย์ ${processed.machineName} (${processed.assetNo})`;
+  try {
+    await api.put(`/assets/${updatedAsset.id}`, processed);
 
     logActivity(
       processed.id,
       processed.machineName,
       processed.assetNo,
-      existing.status !== processed.status ? 'STATUS_CHANGED' : 'UPDATED',
+      'UPDATED',
       currentUser.name,
       currentUser.role,
-      details
+      `แก้ไขรายละเอียดสินทรัพย์ ${processed.machineName} (${processed.assetNo})`
     );
-  }
 
-  return processed;
+    return { ...processed, ageYr: calculateAgeInYears(updatedAsset.receivedDate) };
+  } catch (error) {
+    console.error('Error updating asset to backend:', error);
+    throw error;
+  }
 }
 
-export function approveWaitingListAsset(id: string, bookValueThb: number): Asset | null {
-  const assets = getStoredAssets();
+export async function approveWaitingListAsset(id: string, bookValueThb: number, asset: Asset): Promise<Asset | null> {
   const currentUser = getCurrentUser();
-  const target = assets.find((a) => a.id === id);
-  if (!target) return null;
-
-  const approved: Asset = {
-    ...target,
+  
+  const approved = {
+    ...asset,
     bookValueThb,
-    reviewStatus: 'Active',
-    lastUpdated: new Date().toISOString().split('T')[0],
+    reviewStatus: 'Active' as const,
   };
 
-  saveAssets(assets.map((a) => (a.id === id ? approved : a)));
+  try {
+    await api.put(`/assets/${id}`, approved);
 
-  // Record Audit Log for CAL Approval
-  logActivity(
-    approved.id,
-    approved.machineName,
-    approved.assetNo,
-    'APPROVED',
-    currentUser.name,
-    currentUser.role,
-    `ทบทวนและอนุมัติระบุมูลค่า Book Value เป็น ${bookValueThb.toLocaleString()} THB และย้ายเข้า Master List`,
-    [
-      { field: 'bookValueThb', oldValue: target.bookValueThb, newValue: bookValueThb },
-      { field: 'reviewStatus', oldValue: target.reviewStatus, newValue: 'Active' },
-    ]
-  );
+    logActivity(
+      id,
+      asset.machineName,
+      asset.assetNo,
+      'APPROVED',
+      currentUser.name,
+      currentUser.role,
+      `ทบทวนและอนุมัติระบุมูลค่า Book Value เป็น ${bookValueThb.toLocaleString()} THB และย้ายเข้า Master List`,
+      [
+        { field: 'bookValueThb', oldValue: asset.bookValueThb, newValue: bookValueThb },
+        { field: 'reviewStatus', oldValue: asset.reviewStatus, newValue: 'Active' },
+      ]
+    );
 
-  return approved;
+    return { ...approved, ageYr: calculateAgeInYears(asset.receivedDate) };
+  } catch (error) {
+    console.error('Error approving asset:', error);
+    return null;
+  }
 }
 
 export function resetToInitialData(): Asset[] {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_ASSETS));
+  // Not supported via API yet, just returning mock data
   return INITIAL_ASSETS;
 }

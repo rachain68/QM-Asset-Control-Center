@@ -158,7 +158,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                       <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
                         #{asset.itemNo}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 font-semibold border border-sky-200">
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 font-semibold border border-sky-200 whitespace-nowrap">
                         {asset.sourceSystem}
                       </span>
                     </div>
@@ -282,7 +282,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                       </Button>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200 whitespace-nowrap">
                         {asset.sourceSystem}
                       </span>
                     </td>

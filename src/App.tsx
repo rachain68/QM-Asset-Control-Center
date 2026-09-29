@@ -31,8 +31,13 @@ export function App() {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const loadAssets = async () => {
+    const data = await getStoredAssets();
+    setAssets(data);
+  };
+
   useEffect(() => {
-    setAssets(getStoredAssets());
+    loadAssets();
   }, []);
 
   const showToast = (msg: string) => {
@@ -46,39 +51,56 @@ export function App() {
     showToast(`เปลี่ยนสิทธิ์เป็น: ${user.name} (${user.role})`);
   };
 
-  const handleSaveNewAsset = (
+  const handleSaveNewAsset = async (
     assetData: Omit<Asset, 'id' | 'itemNo' | 'ageYr' | 'amountThb' | 'lastUpdated'>
   ) => {
-    const created = addAsset(assetData);
-    setAssets(getStoredAssets());
-    showToast(`ลงทะเบียนสินทรัพย์ "${created.machineName}" เรียบร้อยแล้ว (บันทึกใน Audit Trail)`);
-    setActiveTab('waitinglist');
+    try {
+      const created = await addAsset(assetData);
+      await loadAssets();
+      showToast(`ลงทะเบียนสินทรัพย์ "${created.machineName}" เรียบร้อยแล้ว (บันทึกใน Audit Trail)`);
+      setActiveTab('waitinglist');
+    } catch (error) {
+      showToast('Error saving asset to backend');
+    }
   };
 
-  const handleSaveEditedAsset = (updated: Asset) => {
-    updateAsset(updated);
-    setAssets(getStoredAssets());
-    showToast(`แก้ไขข้อมูลสินทรัพย์ "${updated.machineName}" เรียบร้อยแล้ว`);
+  const handleSaveEditedAsset = async (updated: Asset) => {
+    try {
+      await updateAsset(updated);
+      await loadAssets();
+      showToast(`แก้ไขข้อมูลสินทรัพย์ "${updated.machineName}" เรียบร้อยแล้ว`);
+    } catch (error) {
+      showToast('Error updating asset');
+    }
   };
 
-  const handleImportAssets = (importedAssets: Omit<Asset, 'id' | 'itemNo'>[]) => {
-    let importedCount = 0;
-    importedAssets.forEach((data) => {
-      addAsset(data);
-      importedCount++;
-    });
-
-    setAssets(getStoredAssets());
-    showToast(`นำเข้าข้อมูลจากไฟล์ Excel จำนวน ${importedCount} รายการสำเร็จเรียบร้อย!`);
+  const handleImportAssets = async (importedAssets: Omit<Asset, 'id' | 'itemNo'>[]) => {
+    try {
+      let importedCount = 0;
+      for (const data of importedAssets) {
+        await addAsset(data);
+        importedCount++;
+      }
+      await loadAssets();
+      showToast(`นำเข้าข้อมูลจากไฟล์ Excel จำนวน ${importedCount} รายการสำเร็จเรียบร้อย!`);
+    } catch (error) {
+      showToast('Error importing assets');
+    }
   };
 
-  const handleApproveAsset = (id: string, bookValueThb: number) => {
-    const approved = approveWaitingListAsset(id, bookValueThb);
-    if (approved) {
-      setAssets(getStoredAssets());
-      showToast(
-        `อนุมัติและระบุ Book Value (${bookValueThb.toLocaleString()} THB) บันทึก Audit Log เรียบร้อย`
-      );
+  const handleApproveAsset = async (id: string, bookValueThb: number) => {
+    const assetToApprove = assets.find((a) => a.id === id);
+    if (!assetToApprove) return;
+    try {
+      const approved = await approveWaitingListAsset(id, bookValueThb, assetToApprove);
+      if (approved) {
+        await loadAssets();
+        showToast(
+          `อนุมัติและระบุ Book Value (${bookValueThb.toLocaleString()} THB) บันทึก Audit Log เรียบร้อย`
+        );
+      }
+    } catch (error) {
+      showToast('Error approving asset');
     }
   };
 

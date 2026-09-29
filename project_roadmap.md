@@ -52,31 +52,31 @@ flowchart TD
 ```
 
 ### Phase 1: การเตรียมโครงสร้างโปรเจกต์และออกแบบฐานข้อมูล (Setup & Architecture)
-- [ ] 1.1 เลือกและติดตั้ง Framework (เช่น Frontend: React/Next.js/Vite + Backend: Node.js/Express หรือ Python/FastAPI)
-- [ ] 1.2 วางโครงสร้าง Database (Tables: `assets`, `users`, `roles`, `categories`, `review_logs`, `external_sync`)
-- [ ] 1.3 สร้างสูตรคำนวณพื้นฐาน (Age Calculation, USD to THB Conversion, 7-Year Useful Life Depreciation)
+- [x] 1.1 เลือกและติดตั้ง Framework (เช่น Frontend: React/Next.js/Vite + Backend: Node.js/Express หรือ Python/FastAPI)
+- [x] 1.2 วางโครงสร้าง Database (Tables: `assets`, `users`, `roles`, `categories`, `review_logs`, `external_sync`)
+- [x] 1.3 สร้างสูตรคำนวณพื้นฐาน (Age Calculation, USD to THB Conversion, 7-Year Useful Life Depreciation)
 
 ### Phase 2: ระบบจัดการสินทรัพย์หลัก (QM Asset Master List & Add New Form)
-- [ ] 2.1 หน้าจอ **QM Asset Master List**: ตารางแสดงรายการสินทรัพย์พร้อมระบบค้นหา (Search), กรอง (Filter), เรียงลำดับ (Sort) และแบ่งหน้า (Pagination)
-- [ ] 2.2 หน้าจอ **Add NEW Asset Form**: ฟอร์มลงทะเบียนสินทรัพย์ใหม่ บังคับกรอกทุกช่อง (เว้น Book Value ไว้รออนุมัติ)
-- [ ] 2.3 ระบบสิทธิ์ผู้ใช้งาน (Role-Based Access Control):
+- [x] 2.1 หน้าจอ **QM Asset Master List**: ตารางแสดงรายการสินทรัพย์พร้อมระบบค้นหา (Search), กรอง (Filter), เรียงลำดับ (Sort) และแบ่งหน้า (Pagination)
+- [x] 2.2 หน้าจอ **Add NEW Asset Form**: ฟอร์มลงทะเบียนสินทรัพย์ใหม่ บังคับกรอกทุกช่อง (เว้น Book Value ไว้รออนุมัติ)
+- [x] 2.3 ระบบสิทธิ์ผู้ใช้งาน (Role-Based Access Control):
   - **Level 1 (Owner):** ดูและแก้ไขได้เฉพาะสินทรัพย์ของตนเอง
   - **Level 2 (Admin / QM Lab Mgr / HOD):** ดูและแก้ไขได้ทั้งหมด
 
 ### Phase 3: ระบบอนุมัติและทบทวนสินทรัพย์ (Waiting List Review Workflow)
-- [ ] 3.1 หน้าจอ **Waiting List Review**: รายการสินทรัพย์ใหม่ที่ส่งมาจากฟอร์ม หรือมาจากระบบภายนอก (QM PM Web, Hana Equipment Web, Buy-off Web)
-- [ ] 3.2 ปุ่ม **Update / Review**: สำหรับทีม CAL / Admin เพื่อตรวจสอบความถูกต้องและกรอก **Book Value (THB)**
-- [ ] 3.3 เมื่ออนุมัติแล้ว ข้อมูลจะย้ายเข้าสู่ **QM Asset Master List** อัตโนมัติ
+- [x] 3.1 หน้าจอ **Waiting List Review**: รายการสินทรัพย์ใหม่ที่ส่งมาจากฟอร์ม หรือมาจากระบบภายนอก (QM PM Web, Hana Equipment Web, Buy-off Web)
+- [x] 3.2 ปุ่ม **Update / Review**: สำหรับทีม CAL / Admin เพื่อตรวจสอบความถูกต้องและกรอก **Book Value (THB)**
+- [x] 3.3 เมื่ออนุมัติแล้ว ข้อมูลจะย้ายเข้าสู่ **QM Asset Master List** อัตโนมัติ
 
 ### Phase 4: ระบบแจ้งเตือนอีเมลอัตโนมัติ (Setup Auto Mail & Cron Job)
-- [ ] 4.1 พัฒนา Cron Job / Scheduler ทำงานปีละ 2 ครั้ง (เดือนเมษายน สำหรับรอบพฤษภาคม, เดือนสิงหาคม สำหรับรอบกันยายน)
-- [ ] 4.2 ระบบส่ง Email Follow-up ถี่ขึ้น (D-7 ถึง D-0) จนกว่ารายการค้างใน Waiting List จะถูกทบทวนครบถ้วน
-- [ ] 4.3 เชื่อมต่อกับระบบ Email Template (HTML Mail พร้อมปุ่ม Direct Link ไปยังหน้าทบทวน)
+- [x] 4.1 พัฒนา Cron Job / Scheduler ทำงานปีละ 2 ครั้ง (เดือนเมษายน สำหรับรอบพฤษภาคม, เดือนสิงหาคม สำหรับรอบกันยายน)
+- [x] 4.2 ระบบส่ง Email Follow-up ถี่ขึ้น (D-7 ถึง D-0) จนกว่ารายการค้างใน Waiting List จะถูกทบทวนครบถ้วน
+- [x] 4.3 เชื่อมต่อกับระบบ Email Template (HTML Mail พร้อมปุ่ม Direct Link ไปยังหน้าทบทวน)
 
 ### Phase 5: สถิติและหน้าจอแดชบอร์ด (Asset Management Dashboard)
-- [ ] 5.1 Card สรุปตัวเลขสำคัญ (Total Assets, Total Book Value, Count by Status, Pending Reviews)
-- [ ] 5.2 กราฟแสดงสัดส่วนสินทรัพย์ตาม Machine Type, Location และอายุการใช้งาน (Age Breakdown)
-- [ ] 5.3 รายงานประมาณการงบประมาณจัดซื้อทดแทน (Capital Expenditure & Replacement Forecast)
+- [x] 5.1 Card สรุปตัวเลขสำคัญ (Total Assets, Total Book Value, Count by Status, Pending Reviews)
+- [x] 5.2 กราฟแสดงสัดส่วนสินทรัพย์ตาม Machine Type, Location และอายุการใช้งาน (Age Breakdown)
+- [x] 5.3 รายงานประมาณการงบประมาณจัดซื้อทดแทน (Capital Expenditure & Replacement Forecast)
 
 ### Phase 6: การเชื่อมต่อระบบภายนอก การทดสอบ และปรับแต่ง (Integration & Deployment)
 - [ ] 6.1 เชื่อมต่อ Sync Data กับระบบภายนอก (QM Center, PMQM Online, Hana Equipment Web)
