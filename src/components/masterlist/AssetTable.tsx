@@ -39,43 +39,24 @@ export const AssetTable: React.FC<AssetTableProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white shadow-xs">
-      <table className="w-full text-left border-collapse custom-table">
-        <thead>
-          <tr className="bg-slate-50 border-b border-slate-200">
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider w-12 text-center">
-              #
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-              Asset Details / Serial No.
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-              Type / Category
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-              Plant / Location
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-              Owner / Dept
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider text-center">
-              Age (Yrs)
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
-              Purchase Cost
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
-              Current Book Value
-            </th>
-            <th className="py-2.5 px-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider text-center">
-              Actions
-            </th>
+    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white shadow-xs max-h-[70vh]">
+      <table className="w-full text-left border-collapse custom-table table-auto text-xs">
+        <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm">
+          <tr className="border-b border-slate-200">
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-center border-r border-slate-200 w-8">#</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200">Machine / Details</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200">Identification</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200">Owner & Location</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200 text-center">Received & Age</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200">Purchasing</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right border-r border-slate-200">AMOUNT (THB)</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right border-r border-slate-200">Book Value (THB)</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200 text-center">Req.</th>
+            <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200">REMARK</th>
+            <th className="py-2.5 px-1 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-center bg-slate-100 sticky right-0 w-20">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 text-xs">
+        <tbody className="divide-y divide-slate-100 text-[11px]">
           {assets.map((asset, index) => {
             const dep = calculateDepreciation(
               asset.amountThb,
@@ -86,107 +67,93 @@ export const AssetTable: React.FC<AssetTableProps> = ({
             const canEdit = isEditable(asset);
 
             return (
-              <tr
-                key={asset.id}
-                className="hover:bg-slate-50/80 transition-colors duration-100 group"
-              >
-                {/* Index No */}
-                <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
-                  {index + 1}
-                </td>
-
-                {/* Machine Name & Serial */}
-                <td className="py-2.5 px-3">
-                  <div className="font-bold text-slate-900 leading-tight">
-                    {asset.machineName}
+              <tr key={asset.id} className="hover:bg-sky-50/50 transition-colors duration-75">
+                <td className="py-2 px-2 text-center text-slate-400 font-mono border-r border-slate-100 align-top">{index + 1}</td>
+                
+                {/* Group 1: Machine Name, Brand, Model, Serial No, Status */}
+                <td className="py-2 px-2 border-r border-slate-100 align-top min-w-[140px]">
+                  <div className="flex items-start justify-between gap-1">
+                    <div className="font-bold text-slate-900 leading-tight whitespace-normal break-words">{asset.machineName}</div>
+                    <div className="shrink-0"><StatusBadge status={asset.status} size="sm" /></div>
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5 flex items-center space-x-1 font-mono">
-                    <span className="text-sky-700 font-semibold">{asset.assetNo}</span>
-                    <span>•</span>
-                    <span className="text-slate-600">{asset.brand}</span>
-                    <span>({asset.model})</span>
+                  <div className="text-[10px] text-slate-600 mt-1 whitespace-normal break-words space-y-0.5">
+                    <div><span className="text-slate-400 font-medium">Brand :</span> {asset.brand}</div>
+                    <div><span className="text-slate-400 font-medium">Model :</span> {asset.model}</div>
                   </div>
-                  <div className="text-[10px] text-slate-400 font-mono">
+                  <div className="text-[10px] text-slate-500 font-mono mt-0.5 whitespace-nowrap">
                     SN: {asset.serialNo}
                   </div>
                 </td>
 
-                {/* Machine Type */}
-                <td className="py-2.5 px-3">
-                  <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                    {asset.machineType}
-                  </span>
+                {/* Group 2: Calibration ID, Asset No., BOI No. */}
+                <td className="py-2 px-2 border-r border-slate-100 align-top whitespace-nowrap">
+                  <div className="font-mono text-sky-700 font-bold" title="Asset No.">{asset.assetNo}</div>
+                  <div className="text-[10px] text-slate-600 font-mono mt-0.5" title="Calibration ID">
+                    CAL: {asset.calibrationId}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-mono mt-0.5" title="BOI No.">
+                    BOI: {asset.boiNo}
+                  </div>
                 </td>
 
-                {/* Location */}
-                <td className="py-2.5 px-3">
-                  <div className="font-semibold text-slate-800">{asset.plant}</div>
-                  <div className="text-[11px] text-slate-500">{asset.location}</div>
+                {/* Group 4: Owner, Location, Plant */}
+                <td className="py-2 px-2 border-r border-slate-100 align-top min-w-[120px]">
+                  <div className="font-semibold text-slate-800 whitespace-normal break-words">{asset.owner}</div>
+                  <div className="text-[10px] text-slate-600 mt-0.5 whitespace-normal break-words">{asset.location}</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5 font-medium">Plant: {asset.plant}</div>
                 </td>
 
-                {/* Owner */}
-                <td className="py-2.5 px-3">
-                  <div className="font-medium text-slate-800">{asset.owner}</div>
-                  <div className="text-[11px] text-slate-500">{asset.area}</div>
+                {/* Group 5: Received Date & Age */}
+                <td className="py-2 px-2 text-center border-r border-slate-100 align-top whitespace-nowrap">
+                  <div className="text-slate-700 font-mono">
+                    {asset.receivedDate ? new Date(asset.receivedDate).toLocaleDateString('en-GB') : '-'}
+                  </div>
+                  <div className="mt-1">
+                    <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${asset.ageYr >= 7 ? 'bg-amber-100 text-amber-800' : 'text-slate-700 bg-slate-100'}`}>
+                      {asset.ageYr} Yrs
+                    </span>
+                  </div>
                 </td>
 
-                {/* Status Badge */}
-                <td className="py-2.5 px-3">
-                  <StatusBadge status={asset.status} size="sm" />
+                {/* Group 3: Invoice No., Currency */}
+                <td className="py-2 px-2 border-r border-slate-100 align-top whitespace-nowrap">
+                  <div className="font-mono text-slate-700">{asset.invoiceNo}</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5 font-semibold">Cur: {asset.currency}</div>
                 </td>
 
-                {/* Age */}
-                <td className="py-2.5 px-3 text-center font-mono">
-                  <span
-                    className={`inline-block px-1.5 py-0.2 rounded font-semibold ${
-                      asset.ageYr >= 7
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    {asset.ageYr} Yrs
-                  </span>
-                </td>
-
-                {/* Purchase Cost */}
-                <td className="py-2.5 px-3 text-right font-mono text-slate-800">
+                {/* AMOUNT (THB) */}
+                <td className="py-2 px-2 text-right font-mono text-slate-800 border-r border-slate-100 align-top whitespace-nowrap">
                   {formatCurrency(asset.amountThb)}
                 </td>
 
-                {/* Book Value */}
-                <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700">
+                {/* Book Value (THB) */}
+                <td className="py-2 px-2 text-right font-mono font-bold text-emerald-700 bg-emerald-50/30 border-r border-slate-100 align-top whitespace-nowrap">
                   {formatCurrency(dep.currentBookValueThb)}
                 </td>
 
-                {/* Actions */}
-                <td className="py-2.5 px-3 text-center">
-                  <div className="flex items-center justify-center space-x-1">
-                    <Button
-                      variant="action-cyan"
-                      size="sm"
-                      title="Calculate Depreciation"
-                      icon={<Calculator className="w-3.5 h-3.5" />}
-                      onClick={() => onOpenDepreciation(asset)}
-                    >
-                      Calc
+                {/* Require (Y/N) */}
+                <td className="py-2 px-2 text-center font-semibold border-r border-slate-100 text-slate-700 align-top">
+                  {asset.requireYN}
+                </td>
+
+                {/* REMARK */}
+                <td className="py-2 px-2 text-slate-600 text-[10px] min-w-[100px] whitespace-normal break-words border-r border-slate-100 align-top">
+                  {asset.remark}
+                </td>
+
+                {/* Actions (Shrunk) */}
+                <td className="py-2 px-1 text-center bg-white sticky right-0 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] border-l border-slate-200 align-top">
+                  <div className="flex items-center justify-center space-x-0.5">
+                    <Button variant="action-cyan" size="sm" className="px-1.5 py-1" title="Calculate Depreciation" onClick={() => onOpenDepreciation(asset)}>
+                      <Calculator className="w-3.5 h-3.5" />
                     </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      title="View Audit Log History"
-                      icon={<History className="w-3.5 h-3.5 text-slate-500" />}
-                      onClick={() => onOpenHistory(asset)}
-                    />
-
+                    <Button variant="outline" size="sm" className="px-1.5 py-1" title="View Audit Log History" onClick={() => onOpenHistory(asset)}>
+                      <History className="w-3.5 h-3.5 text-slate-500" />
+                    </Button>
                     {canEdit && (
-                      <Button
-                        variant="action-purple"
-                        size="sm"
-                        title="Edit Asset Details"
-                        icon={<Edit3 className="w-3.5 h-3.5" />}
-                        onClick={() => onEditAsset(asset)}
-                      />
+                      <Button variant="action-purple" size="sm" className="px-1.5 py-1" title="Edit Asset Details" onClick={() => onEditAsset(asset)}>
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </Button>
                     )}
                   </div>
                 </td>

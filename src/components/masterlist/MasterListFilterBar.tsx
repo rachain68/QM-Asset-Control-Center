@@ -12,6 +12,9 @@ interface MasterListFilterBarProps {
   selectedPlant: string;
   onPlantChange: (value: string) => void;
   uniquePlants: string[];
+  selectedLocation: string;
+  onLocationChange: (value: string) => void;
+  uniqueLocations: string[];
   viewMode: 'table' | 'cards';
   onViewModeChange: (mode: 'table' | 'cards') => void;
   onExportExcel: () => void;
@@ -31,6 +34,9 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
   selectedPlant,
   onPlantChange,
   uniquePlants,
+  selectedLocation,
+  onLocationChange,
+  uniqueLocations,
   viewMode,
   onViewModeChange,
   onExportExcel,
@@ -138,11 +144,11 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
       <div className="glass-panel p-3 bg-white border border-slate-200 rounded-md">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-center">
           {/* Search Input */}
-          <div className="lg:col-span-5 relative">
+          <div className="lg:col-span-4 relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by Machine name, Brand, Model, Serial, Owner..."
+              placeholder="Search Machine, Brand, Model..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               className="form-input pl-9 pr-8"
@@ -164,7 +170,7 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
               onChange={(e) => onTypeChange(e.target.value)}
               className="form-input cursor-pointer"
             >
-              <option value="ALL">All Machine Types</option>
+              <option value="ALL">All Types</option>
               <option value="Measuring Equipment">Measuring Equipment</option>
               <option value="FA Testing Equipment">FA Testing Equipment</option>
               <option value="Chemical Testing Machine">Chemical Testing Machine</option>
@@ -179,16 +185,16 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
               className="form-input cursor-pointer"
             >
               <option value="ALL">All Statuses</option>
-              <option value="Good">Good (ปกติ)</option>
-              <option value="Fair">Fair (ใช้งานได้)</option>
-              <option value="Poor">Poor (รอซ่อม)</option>
+              <option value="Good">Good</option>
+              <option value="Fair">Fair</option>
+              <option value="Poor">Poor</option>
               <option value="Discontinue part">Discontinue part</option>
-              <option value="Written off">Written off (จำหน่ายออก)</option>
+              <option value="Written off">Written off</option>
             </select>
           </div>
 
           {/* Plant Filter */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
             <select
               value={selectedPlant}
               onChange={(e) => onPlantChange(e.target.value)}
@@ -197,7 +203,23 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
               <option value="ALL">All Plants</option>
               {uniquePlants.map((plant) => (
                 <option key={plant} value={plant}>
-                  Plant {plant}
+                  {plant}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Location Filter */}
+          <div className="lg:col-span-2">
+            <select
+              value={selectedLocation}
+              onChange={(e) => onLocationChange(e.target.value)}
+              className="form-input cursor-pointer"
+            >
+              <option value="ALL">All Locations</option>
+              {uniqueLocations.map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
                 </option>
               ))}
             </select>

@@ -29,6 +29,7 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [selectedPlant, setSelectedPlant] = useState<string>('ALL');
+  const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   // Filter Assets
@@ -42,13 +43,15 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
       (asset.model || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (asset.assetNo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (asset.serialNo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (asset.owner || '').toLowerCase().includes(searchTerm.toLowerCase());
+      (asset.owner || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (asset.location || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesType = selectedType === 'ALL' || asset.machineType === selectedType;
     const matchesStatus = selectedStatus === 'ALL' || asset.status === selectedStatus;
     const matchesPlant = selectedPlant === 'ALL' || asset.plant === selectedPlant;
+    const matchesLocation = selectedLocation === 'ALL' || asset.location === selectedLocation;
 
-    return matchesSearch && matchesType && matchesStatus && matchesPlant;
+    return matchesSearch && matchesType && matchesStatus && matchesPlant && matchesLocation;
   });
 
   const handleExport = async () => {
@@ -89,6 +92,7 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
   };
 
   const uniquePlants = Array.from(new Set(assets.map((a) => a.plant))).filter(Boolean);
+  const uniqueLocations = Array.from(new Set(assets.map((a) => a.location))).filter(Boolean);
 
   return (
     <div className="space-y-4">
@@ -103,6 +107,9 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
         selectedPlant={selectedPlant}
         onPlantChange={setSelectedPlant}
         uniquePlants={uniquePlants}
+        selectedLocation={selectedLocation}
+        onLocationChange={setSelectedLocation}
+        uniqueLocations={uniqueLocations}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onExportExcel={handleExport}
