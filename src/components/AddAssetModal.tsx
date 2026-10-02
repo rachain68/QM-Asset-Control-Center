@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Asset, MachineType, Currency } from '../types/asset';
 import { PlusCircle, Info } from 'lucide-react';
 import { calculateAgeInYears } from '../services/depreciation';
@@ -12,26 +12,26 @@ interface AddAssetModalProps {
 }
 
 export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, onSave }) => {
-  const [formData, setFormData] = useState({
+  const getInitialState = () => ({
     machineName: '',
     brand: '',
     model: '',
     serialNo: '',
-    boiNo: 'N/A',
+    boiNo: '',
     assetNo: '',
     machineNo: '',
-    calibrationId: 'N/A',
+    calibrationId: '',
     machineType: 'Analysis Equipment' as MachineType,
     receivedDate: new Date().toISOString().split('T')[0],
     invoiceNo: '',
     invCost: 0,
     currency: 'THB' as Currency,
     exchangeRateToThb: 1.0,
-    owner: 'APICHAYA P.',
-    location: 'FA Lab',
-    plant: 'FA',
-    floor: '1',
-    area: 'FA_Lab',
+    owner: '',
+    location: '',
+    plant: '',
+    floor: '',
+    area: '',
     bookValueThb: null as number | null,
     status: 'Good' as const,
     requireYN: 'Y' as const,
@@ -41,10 +41,18 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
     usefulLifeYears: 7,
   });
 
+  const [formData, setFormData] = useState(getInitialState());
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(getInitialState());
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const calculatedAge = calculateAgeInYears(formData.receivedDate);
-  const calculatedThb = Math.round(formData.invCost * formData.exchangeRateToThb * 100) / 100;
+  const calculatedThb = Math.round((Number(formData.invCost) || 0) * formData.exchangeRateToThb * 100) / 100;
 
   const handleCurrencyChange = (curr: Currency) => {
     let rate = 1.0;
@@ -56,12 +64,16 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.machineName || !formData.serialNo || !formData.assetNo) {
-      alert('กรุณากรอกข้อมูลสำคัญ (Machine Name, Serial No, Asset No) ให้ครบถ้วน');
+    if (!formData.machineName || !formData.serialNo || !formData.assetNo || !formData.plant || !formData.location) {
+      alert('กรุณากรอกข้อมูลสำคัญที่มีเครื่องหมาย * ให้ครบถ้วน');
       return;
     }
 
-    onSave(formData);
+    onSave({
+      ...formData,
+      boiNo: formData.boiNo || 'N/A',
+      calibrationId: formData.calibrationId || 'N/A',
+    });
     onClose();
   };
 
@@ -72,7 +84,7 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
       title="Add New Item in QM Asset Masterlist"
       subtitle="เพิ่มข้อมูลเครื่องจักร/เครื่องมือวัดลงในระบบ (ส่งเข้า Waiting List ให้ทีม CAL ตรวจสอบ Book Value)"
       icon={<PlusCircle className="w-5 h-5 text-[#006194]" />}
-      maxWidth="2xl"
+      maxWidth="3xl"
     >
       <div className="space-y-4">
         {/* Requirements Callout */}
@@ -106,7 +118,7 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
               <input
                 type="text"
                 required
-                placeholder="เช่น Bruker, Olympus"
+                placeholder="เช่น Bruker"
                 value={formData.brand}
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                 className="form-input"
@@ -182,7 +194,7 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
               <label className="form-label">Calibration ID</label>
               <input
                 type="text"
-                placeholder="เช่น MTE-3-411 หรือ N/A"
+                placeholder="เช่น MTE-3-411"
                 value={formData.calibrationId}
                 onChange={(e) => setFormData({ ...formData, calibrationId: e.target.value })}
                 className="form-input"
@@ -232,37 +244,7 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
                 className="form-input"
               />
             </div>
-
-            {/* Invoice Cost & Currency */}
-            <div>
-              <label className="form-label">Invoice Cost & Currency *</label>
-              <div className="flex space-x-1.5">
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={formData.invCost}
-                  onChange={(e) =>
-                    setFormData({ ...formData, invCost: parseFloat(e.target.value) || 0 })
-                  }
-                  className="form-input flex-1 font-mono"
-                />
-                <select
-                  value={formData.currency}
-                  onChange={(e) => handleCurrencyChange(e.target.value as Currency)}
-                  className="form-input w-20 font-mono"
-                >
-                  <option value="THB">THB</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="JPY">JPY</option>
-                </select>
-              </div>
-              <span className="text-[11px] text-emerald-700 mt-1 block font-bold font-mono">
-                = {calculatedThb.toLocaleString()} THB
-              </span>
-            </div>
-
+            
             {/* Owner */}
             <div>
               <label className="form-label">Owner *</label>
@@ -276,40 +258,82 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
               />
             </div>
 
-            {/* Location & Plant */}
-            <div>
-              <label className="form-label">Plant & Location *</label>
-              <div className="flex space-x-1.5">
+            {/* Invoice Cost & Currency */}
+            <div className="lg:col-span-2">
+              <label className="form-label">Invoice Cost & Currency *</label>
+              <div className="flex space-x-2">
                 <input
-                  type="text"
+                  type="number"
+                  step="0.01"
                   required
-                  placeholder="Plant (เช่น FA)"
+                  placeholder="ระบุราคา"
+                  value={formData.invCost || ''}
+                  onChange={(e) =>
+                    setFormData({ ...formData, invCost: parseFloat(e.target.value) || 0 })
+                  }
+                  className="form-input w-3/4 font-mono text-base py-1.5"
+                />
+                <select
+                  value={formData.currency}
+                  onChange={(e) => handleCurrencyChange(e.target.value as Currency)}
+                  className="form-input w-1/4 font-mono font-semibold"
+                >
+                  <option value="THB">THB</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="JPY">JPY</option>
+                </select>
+              </div>
+              <span className="text-[11px] text-emerald-700 mt-1 block font-bold font-mono">
+                = {calculatedThb.toLocaleString()} THB
+              </span>
+            </div>
+
+            {/* Location & Plant */}
+            <div className="lg:col-span-2">
+              <label className="form-label">Plant & Location *</label>
+              <div className="flex space-x-2">
+                <select
+                  required
                   value={formData.plant}
                   onChange={(e) => setFormData({ ...formData, plant: e.target.value })}
-                  className="form-input w-1/2"
-                />
-                <input
-                  type="text"
+                  className="form-input w-1/3"
+                >
+                  <option value="" disabled>เลือก Plant</option>
+                  <option value="LPN1">LPN1</option>
+                  <option value="LPN2">LPN2</option>
+                </select>
+                <select
                   required
-                  placeholder="Location (เช่น FA Lab)"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="form-input w-1/2"
-                />
+                  className="form-input w-2/3"
+                >
+                  <option value="" disabled>เลือก Location</option>
+                  <option value="QM1">QM1</option>
+                  <option value="QM2">QM2</option>
+                  <option value="QM3">QM3</option>
+                  <option value="QM4">QM4</option>
+                  <option value="IQA">IQA</option>
+                  <option value="IQAS">IQAS</option>
+                  <option value="CAL_LAB">CAL_LAB</option>
+                  <option value="FA_LAB">FA_LAB</option>
+                  <option value="REL_LAB">REL_LAB</option>
+                </select>
               </div>
             </div>
 
             {/* Floor & Area */}
-            <div>
+            <div className="lg:col-span-2">
               <label className="form-label">Floor & Area *</label>
-              <div className="flex space-x-1.5">
+              <div className="flex space-x-2">
                 <input
                   type="text"
                   required
                   placeholder="Floor (เช่น 1)"
                   value={formData.floor}
                   onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
-                  className="form-input w-1/2"
+                  className="form-input w-1/3"
                 />
                 <input
                   type="text"
@@ -317,7 +341,7 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
                   placeholder="Area (เช่น FA_Lab)"
                   value={formData.area}
                   onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                  className="form-input w-1/2"
+                  className="form-input w-2/3"
                 />
               </div>
             </div>
