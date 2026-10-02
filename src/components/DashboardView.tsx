@@ -27,13 +27,21 @@ import {
 import { KpiCard } from './common/KpiCard';
 import { Button } from './common/Button';
 import { StatusBadge } from './common/StatusBadge';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DashboardViewProps {
   assets: Asset[];
   onNavigate: (tab: string) => void;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ assets, onNavigate }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ assets: initialAssets, onNavigate }) => {
+  const { currentUser } = useAuth();
+  
+  // Filter assets based on role
+  const assets = currentUser?.role === 'Level 1 Owner' 
+    ? initialAssets.filter(a => a.location === currentUser.location)
+    : initialAssets;
+
   const activeAssets = assets.filter((a) => a.reviewStatus === 'Active');
   const waitingAssets = assets.filter((a) => a.reviewStatus === 'Waiting List');
 

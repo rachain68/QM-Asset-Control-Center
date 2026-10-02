@@ -40,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: user.email || '',
       role: user.role_id === 2 ? 'Level 2 Admin' : 'Level 1 Owner',
       department: 'QM',
+      location: user.location || 'QM1', // Default or mapped from backend
     };
 
     localStorage.setItem('qm_asset_control_center_user_v1', JSON.stringify(mappedUser));

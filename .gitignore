@@ -14,8 +14,7 @@ dist-electron/
 .vscode/
 .idea/
 .DS_Store
-.xlsx
-.db.json
+
 Thumbs.db
 *.log
 

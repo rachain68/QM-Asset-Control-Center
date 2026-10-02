@@ -51,25 +51,27 @@ export const Header: React.FC<HeaderProps> = ({
       icon: <Clock className="w-4 h-4 text-sky-600" />,
       badge: waitingListCount > 0 ? waitingListCount : undefined,
     },
-    {
-      id: 'audittrail',
-      label: 'Audit Trail',
-      icon: <History className="w-4 h-4 text-emerald-600" />,
-    },
-    {
-      id: 'automail',
-      label: 'Auto Mail Setup',
-      icon: <Mail className="w-4 h-4 text-purple-600" />,
-    },
   ];
 
   if (isAdmin) {
-    navItems.push({
-      id: 'users',
-      label: 'User Setup',
-      icon: <Users className="w-4 h-4 text-amber-600" />,
-      badge: undefined
-    });
+    navItems.push(
+      {
+        id: 'audittrail',
+        label: 'Audit Trail',
+        icon: <History className="w-4 h-4 text-emerald-600" />,
+      },
+      {
+        id: 'automail',
+        label: 'Auto Mail Setup',
+        icon: <Mail className="w-4 h-4 text-purple-600" />,
+      },
+      {
+        id: 'users',
+        label: 'User Setup',
+        icon: <Users className="w-4 h-4 text-amber-600" />,
+        badge: undefined
+      }
+    );
   }
 
   const handleTabClick = (tabId: string) => {

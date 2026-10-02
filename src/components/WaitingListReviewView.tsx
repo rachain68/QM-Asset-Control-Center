@@ -204,15 +204,17 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                   </div>
                 </div>
 
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={<CheckCircle className="w-4 h-4" />}
-                  onClick={() => handleOpenReviewModal(asset)}
-                  className="w-full justify-center"
-                >
-                  Review & Approve
-                </Button>
+                {currentUser.role === 'Level 2 Admin' && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={<CheckCircle className="w-4 h-4" />}
+                    onClick={() => handleOpenReviewModal(asset)}
+                    className="w-full justify-center"
+                  >
+                    Review & Approve
+                  </Button>
+                )}
               </div>
             );
           })
@@ -272,14 +274,16 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                       #{asset.itemNo}
                     </td>
                     <td className="py-2.5 px-3 text-center">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        icon={<CheckCircle className="w-3.5 h-3.5" />}
-                        onClick={() => handleOpenReviewModal(asset)}
-                      >
-                        Approve
-                      </Button>
+                      {currentUser.role === 'Level 2 Admin' && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={<CheckCircle className="w-3.5 h-3.5" />}
+                          onClick={() => handleOpenReviewModal(asset)}
+                        >
+                          Approve
+                        </Button>
+                      )}
                     </td>
                     <td className="py-2.5 px-3">
                       <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200 whitespace-nowrap">

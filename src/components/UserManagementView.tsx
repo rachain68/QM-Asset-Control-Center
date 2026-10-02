@@ -11,6 +11,7 @@ interface UserData {
   email: string;
   role_name: string;
   role_id: number;
+  location: string;
   created_at: string;
 }
 
@@ -27,6 +28,7 @@ export const UserManagementView: React.FC = () => {
     username: '',
     email: '',
     password: '',
+    location: '',
     role_id: 1, // 1=Level 1, 2=Level 2
   });
 
@@ -49,7 +51,7 @@ export const UserManagementView: React.FC = () => {
 
   const openAddModal = () => {
     setEditingUser(null);
-    setFormData({ employee_id: '', username: '', email: '', password: '', role_id: 1 });
+    setFormData({ employee_id: '', username: '', email: '', password: '', role_id: 1, location: '' });
     setIsModalOpen(true);
   };
 
@@ -61,6 +63,7 @@ export const UserManagementView: React.FC = () => {
       email: user.email || '',
       password: '', // blank unless changing
       role_id: user.role_id,
+      location: user.location || '',
     });
     setIsModalOpen(true);
   };
@@ -115,6 +118,7 @@ export const UserManagementView: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Employee ID</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Location</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Created</th>
                 <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Actions</th>
               </tr>
@@ -137,6 +141,9 @@ export const UserManagementView: React.FC = () => {
                       {user.role_id === 2 ? <ShieldCheck className="w-3 h-3 mr-1" /> : null}
                       {user.role_name}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 font-semibold">
+                    {user.location || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     {new Date(user.created_at).toLocaleDateString('th-TH')}
@@ -228,6 +235,28 @@ export const UserManagementView: React.FC = () => {
                   <option value={2}>Level 2 (Admin / CAL)</option>
                 </select>
               </div>
+              {formData.role_id === 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">พื้นที่รับผิดชอบ (Location)</label>
+                  <select
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                    required
+                  >
+                    <option value="" disabled>เลือก Location</option>
+                    <option value="QM1">QM1</option>
+                    <option value="QM2">QM2</option>
+                    <option value="QM3">QM3</option>
+                    <option value="QM4">QM4</option>
+                    <option value="IQA">IQA</option>
+                    <option value="IQAS">IQAS</option>
+                    <option value="CAL_LAB">CAL_LAB</option>
+                    <option value="FA_LAB">FA_LAB</option>
+                    <option value="REL_LAB">REL_LAB</option>
+                  </select>
+                </div>
+              )}
               <div className="pt-4 flex justify-end space-x-3">
                 <Button variant="secondary" type="button" onClick={() => setIsModalOpen(false)}>ยกเลิก</Button>
                 <Button variant="primary" type="submit">บันทึกข้อมูล</Button>

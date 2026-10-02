@@ -66,6 +66,7 @@ export interface User {
   email: string;
   role: UserRole;
   department: string;
+  location: string;
 }
 
 export interface DepreciationDetails {
