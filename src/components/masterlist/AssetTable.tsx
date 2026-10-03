@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Asset, User } from '../../types/asset';
 import { calculateDepreciation, formatCurrency } from '../../services/depreciation';
 import { StatusBadge } from '../common/StatusBadge';
 import { Button } from '../common/Button';
-import { Calculator, History, Edit3 } from 'lucide-react';
+import { Calculator, History, Edit3, Trash2, MoreVertical } from 'lucide-react';
 
 interface AssetTableProps {
   assets: Asset[];
@@ -11,6 +11,7 @@ interface AssetTableProps {
   onEditAsset: (asset: Asset) => void;
   onOpenDepreciation: (asset: Asset) => void;
   onOpenHistory: (asset: Asset) => void;
+  onDeleteAsset: (id: string) => void;
 }
 
 export const AssetTable: React.FC<AssetTableProps> = ({
@@ -19,7 +20,21 @@ export const AssetTable: React.FC<AssetTableProps> = ({
   onEditAsset,
   onOpenDepreciation,
   onOpenHistory,
+  onDeleteAsset,
 }) => {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLTableSectionElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const isEditable = (asset: Asset) => {
     if (currentUser.role === 'Level 2 Admin') return true;
     return (asset.location || '').toLowerCase().trim() === (currentUser.location || '').toLowerCase().trim();
@@ -53,10 +68,10 @@ export const AssetTable: React.FC<AssetTableProps> = ({
             <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right border-r border-slate-200">Book Value (THB)</th>
             <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200 text-center">Req.</th>
             <th className="py-2.5 px-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-r border-slate-200">REMARK</th>
-            <th className="py-2.5 px-1 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-center bg-slate-100 sticky right-0 w-20">Actions</th>
+            <th className="py-2.5 px-1 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-center bg-slate-100 sticky right-0 w-16">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 text-[11px]">
+        <tbody ref={dropdownRef} className="divide-y divide-slate-100 text-[11px]">
           {assets.map((asset, index) => {
             const dep = calculateDepreciation(
               asset.amountThb,
@@ -67,7 +82,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
             const canEdit = isEditable(asset);
 
             return (
-              <tr key={asset.id} className="hover:bg-sky-50/50 transition-colors duration-75">
+              <tr key={asset.id} className="group hover:bg-sky-50/50 transition-colors duration-75">
                 <td className="py-2 px-2 text-center text-slate-400 font-mono border-r border-slate-100 align-top">{index + 1}</td>
                 
                 {/* Group 1: Machine Name, Brand, Model, Serial No, Status */}
@@ -141,9 +156,9 @@ export const AssetTable: React.FC<AssetTableProps> = ({
                   {asset.remark}
                 </td>
 
-                {/* Actions (Shrunk) */}
-                <td className="py-2 px-1 text-center bg-white sticky right-0 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] border-l border-slate-200 align-top">
-                  <div className="flex items-center justify-center space-x-0.5">
+                {/* Actions (Show on Hover) */}
+                <td className="py-2 px-1 text-center bg-white sticky right-0 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] border-l border-slate-200 align-middle">
+                  <div className="grid grid-cols-2 gap-1 w-max mx-auto opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
                     <Button variant="action-cyan" size="sm" className="px-1.5 py-1" title="Calculate Depreciation" onClick={() => onOpenDepreciation(asset)}>
                       <Calculator className="w-3.5 h-3.5" />
                     </Button>
@@ -153,6 +168,11 @@ export const AssetTable: React.FC<AssetTableProps> = ({
                     {canEdit && (
                       <Button variant="action-purple" size="sm" className="px-1.5 py-1" title="Edit Asset Details" onClick={() => onEditAsset(asset)}>
                         <Edit3 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                    {currentUser.role === 'Level 2 Admin' && (
+                      <Button variant="outline" size="sm" className="px-1.5 py-1 text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200" title="Delete Asset" onClick={() => onDeleteAsset(asset.id)}>
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     )}
                   </div>

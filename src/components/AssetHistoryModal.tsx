@@ -1,5 +1,5 @@
-import React from 'react';
-import { Asset } from '../types/asset';
+import React, { useState, useEffect } from 'react';
+import { Asset, AuditLog } from '../types/asset';
 import { getAuditLogsForAsset } from '../services/auditService';
 import { History, Clock } from 'lucide-react';
 import { Modal } from './common/Modal';
@@ -11,9 +11,19 @@ interface AssetHistoryModalProps {
 }
 
 export const AssetHistoryModal: React.FC<AssetHistoryModalProps> = ({ asset, onClose }) => {
-  if (!asset) return null;
+  const [logs, setLogs] = useState<AuditLog[]>([]);
 
-  const logs = getAuditLogsForAsset(asset.id);
+  useEffect(() => {
+    let mounted = true;
+    if (asset) {
+      getAuditLogsForAsset(asset.id).then((fetched) => {
+        if (mounted) setLogs(fetched);
+      });
+    }
+    return () => { mounted = false; };
+  }, [asset]);
+
+  if (!asset) return null;
 
   const getActionBadge = (action: string) => {
     switch (action) {

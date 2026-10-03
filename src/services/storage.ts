@@ -62,7 +62,7 @@ export async function addAsset(newAssetData: Omit<Asset, 'id' | 'itemNo' | 'ageY
     const id = response.data.id || response.data.assetId;
     
     // Automatically Record Audit Log
-    logActivity(
+ await logActivity(
       id,
       fullAsset.machineName,
       fullAsset.assetNo,
@@ -91,7 +91,7 @@ export async function updateAsset(updatedAsset: Asset): Promise<Asset> {
   try {
     await api.put(`/assets/${updatedAsset.id}`, processed);
 
-    logActivity(
+ await logActivity(
       processed.id,
       processed.machineName,
       processed.assetNo,
@@ -120,7 +120,7 @@ export async function approveWaitingListAsset(id: string, bookValueThb: number, 
   try {
     await api.put(`/assets/${id}`, approved);
 
-    logActivity(
+ await logActivity(
       id,
       asset.machineName,
       asset.assetNo,
@@ -144,4 +144,25 @@ export async function approveWaitingListAsset(id: string, bookValueThb: number, 
 export function resetToInitialData(): Asset[] {
   // Not supported via API yet, just returning mock data
   return INITIAL_ASSETS;
+}
+
+export async function deleteAssetAPI(id: string): Promise<void> {
+  try {
+    await api.delete(`/assets/${id}`);
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      await logActivity(
+        id,
+        'Unknown', // Ideally pass asset name
+        'Unknown',
+        'STATUS_CHANGED',
+        currentUser.name,
+        currentUser.role,
+        `Deleted asset ${id}`
+      );
+    }
+  } catch (error) {
+    console.error('Error deleting asset:', error);
+    throw error;
+  }
 }

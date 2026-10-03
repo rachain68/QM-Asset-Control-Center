@@ -3,7 +3,7 @@ import { Asset, User } from '../../types/asset';
 import { calculateDepreciation, formatCurrency } from '../../services/depreciation';
 import { StatusBadge } from '../common/StatusBadge';
 import { Button } from '../common/Button';
-import { Calculator, History, Edit3, MapPin, Tag, Calendar, UserCheck } from 'lucide-react';
+import { Calculator, History, Edit3, MapPin, Tag, Calendar, UserCheck, Trash2 } from 'lucide-react';
 
 interface AssetCardListProps {
   assets: Asset[];
@@ -11,6 +11,7 @@ interface AssetCardListProps {
   onEditAsset: (asset: Asset) => void;
   onOpenDepreciation: (asset: Asset) => void;
   onOpenHistory: (asset: Asset) => void;
+  onDeleteAsset: (id: string) => void;
 }
 
 export const AssetCardList: React.FC<AssetCardListProps> = ({
@@ -19,6 +20,7 @@ export const AssetCardList: React.FC<AssetCardListProps> = ({
   onEditAsset,
   onOpenDepreciation,
   onOpenHistory,
+  onDeleteAsset,
 }) => {
   const isEditable = (asset: Asset) => {
     if (currentUser.role === 'Level 2 Admin') return true;
@@ -150,6 +152,17 @@ export const AssetCardList: React.FC<AssetCardListProps> = ({
                   onClick={() => onEditAsset(asset)}
                 >
                   Edit
+                </Button>
+              )}
+              {currentUser.role === 'Level 2 Admin' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
+                  icon={<Trash2 className="w-3.5 h-3.5" />}
+                  onClick={() => onDeleteAsset(asset.id)}
+                >
+                  Delete
                 </Button>
               )}
             </div>

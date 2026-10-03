@@ -1,84 +1,17 @@
 import { AuditLog, AuditAction, AuditFieldChange } from '../types/asset';
+import api from '../api';
 
-const AUDIT_STORAGE_KEY = 'qm_asset_audit_logs_v1';
-
-export const INITIAL_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: 'log-101',
-    timestamp: '2026-03-05 14:30:15',
-    assetId: 'ast-005',
-    assetName: 'Coordinate Measuring Machine CMM',
-    assetNo: 'HM19823',
-    action: 'CREATED',
-    performedBy: 'CHATCHAI S.',
-    performedByRole: 'Level 1 Owner',
-    details: 'ลงทะเบียนสินทรัพย์ใหม่จากระบบ Machine Buy-off Web (เข้าสู่ Waiting List Review)',
-  },
-  {
-    id: 'log-102',
-    timestamp: '2026-03-01 10:15:00',
-    assetId: 'ast-001',
-    assetName: 'Micro XRF',
-    assetNo: 'HM22063',
-    action: 'CREATED',
-    performedBy: 'APICHAYA P.',
-    performedByRole: 'Level 1 Owner',
-    details: 'ดึงข้อมูลสินทรัพย์จากการลงทะเบียนใน QM PM Web',
-  },
-  {
-    id: 'log-103',
-    timestamp: '2026-01-10 16:45:22',
-    assetId: 'ast-004',
-    assetName: 'Vision measuring Machine',
-    assetNo: 'HM23373',
-    action: 'APPROVED',
-    performedBy: 'QM ADMIN (Authorized CAL Team)',
-    performedByRole: 'Level 2 Admin',
-    details: 'ทบทวนและระบุมูลค่า Book Value (THB) 713,500 THB และย้ายเข้า Master List',
-    changes: [
-      { field: 'bookValueThb', oldValue: null, newValue: 713500 },
-      { field: 'reviewStatus', oldValue: 'Waiting List', newValue: 'Active' },
-    ],
-  },
-  {
-    id: 'log-104',
-    timestamp: '2025-11-20 09:20:10',
-    assetId: 'ast-003',
-    assetName: 'Measuring Microscope.1',
-    assetNo: 'HM1190',
-    action: 'STATUS_CHANGED',
-    performedBy: 'JAREE P.',
-    performedByRole: 'Level 1 Owner',
-    details: 'ปรับเปลี่ยนสภาพเครื่องจาก Good เป็น Fair หลังการตรวจสอบซ่อมบำรุงประจำปี',
-    changes: [
-      { field: 'status', oldValue: 'Good', newValue: 'Fair' },
-    ],
-  },
-];
-
-export function getAuditLogs(): AuditLog[] {
+export async function getAuditLogs(): Promise<AuditLog[]> {
   try {
-    const raw = localStorage.getItem(AUDIT_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(INITIAL_AUDIT_LOGS));
-      return INITIAL_AUDIT_LOGS;
-    }
-    return JSON.parse(raw);
+    const response = await api.get('/audit');
+    return response.data;
   } catch (err) {
     console.error('Failed to load audit logs:', err);
-    return INITIAL_AUDIT_LOGS;
+    return [];
   }
 }
 
-export function saveAuditLogs(logs: AuditLog[]): void {
-  try {
-    localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(logs));
-  } catch (err) {
-    console.error('Failed to save audit logs:', err);
-  }
-}
-
-export function logActivity(
+export async function logActivity(
   assetId: string,
   assetName: string,
   assetNo: string,
@@ -87,14 +20,8 @@ export function logActivity(
   performedByRole: string,
   details: string,
   changes?: AuditFieldChange[]
-): AuditLog {
-  const currentLogs = getAuditLogs();
-  const now = new Date();
-  const formattedTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-
-  const newLog: AuditLog = {
-    id: `log-${Date.now()}`,
-    timestamp: formattedTime,
+): Promise<AuditLog | null> {
+  const newLog = {
     assetId,
     assetName,
     assetNo,
@@ -105,12 +32,21 @@ export function logActivity(
     changes,
   };
 
-  const updatedLogs = [newLog, ...currentLogs];
-  saveAuditLogs(updatedLogs);
-  return newLog;
+  try {
+    const response = await api.post('/audit', newLog);
+    return { ...newLog, id: response.data.id, timestamp: new Date().toISOString() } as AuditLog;
+  } catch (err) {
+    console.error('Failed to save audit log:', err);
+    return null;
+  }
 }
 
-export function getAuditLogsForAsset(assetId: string): AuditLog[] {
-  const logs = getAuditLogs();
-  return logs.filter((l) => l.assetId === assetId);
+export async function getAuditLogsForAsset(assetId: string): Promise<AuditLog[]> {
+  try {
+    const response = await api.get(`/audit/asset/${assetId}`);
+    return response.data;
+  } catch (err) {
+    console.error(`Failed to load audit logs for asset ${assetId}:`, err);
+    return [];
+  }
 }

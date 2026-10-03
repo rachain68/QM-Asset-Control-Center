@@ -84,7 +84,7 @@ export const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose, o
       title="Add New Item in QM Asset Masterlist"
       subtitle="เพิ่มข้อมูลเครื่องจักร/เครื่องมือวัดลงในระบบ (ส่งเข้า Waiting List ให้ทีม CAL ตรวจสอบ Book Value)"
       icon={<PlusCircle className="w-5 h-5 text-[#006194]" />}
-      maxWidth="3xl"
+      maxWidth="4xl"
     >
       <div className="space-y-4">
         {/* Requirements Callout */}

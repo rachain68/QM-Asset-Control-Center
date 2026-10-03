@@ -14,6 +14,7 @@ interface MasterListViewProps {
   onOpenHistory: (asset: Asset) => void;
   onResetData: () => void;
   onImportAssets: () => void; // changed signature
+  onDeleteAsset: (id: string) => void;
 }
 
 export const MasterListView: React.FC<MasterListViewProps> = ({
@@ -24,6 +25,7 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
   onOpenHistory,
   onResetData,
   onImportAssets,
+  onDeleteAsset,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('ALL');
@@ -127,6 +129,7 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
           onEditAsset={onEditAsset}
           onOpenDepreciation={onOpenDepreciation}
           onOpenHistory={onOpenHistory}
+          onDeleteAsset={onDeleteAsset}
         />
       ) : (
         <AssetCardList
@@ -135,6 +138,7 @@ export const MasterListView: React.FC<MasterListViewProps> = ({
           onEditAsset={onEditAsset}
           onOpenDepreciation={onOpenDepreciation}
           onOpenHistory={onOpenHistory}
+          onDeleteAsset={onDeleteAsset}
         />
       )}
     </div>

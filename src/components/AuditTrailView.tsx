@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuditLog } from '../types/asset';
 import { getAuditLogs } from '../services/auditService';
 import { History, Search, Download, Clock } from 'lucide-react';
 import { Button } from './common/Button';
 
 export const AuditTrailView: React.FC = () => {
-  const [logs] = useState<AuditLog[]>(getAuditLogs());
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAction, setSelectedAction] = useState<string>('ALL');
+
+  useEffect(() => {
+    let mounted = true;
+    getAuditLogs().then((fetched) => {
+      if (mounted) setLogs(fetched);
+    });
+    return () => { mounted = false; };
+  }, []);
 
   const filteredLogs = logs.filter((log) => {
     const matchesSearch =

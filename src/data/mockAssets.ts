@@ -7,6 +7,7 @@ export const MOCK_USERS: User[] = [
     email: 'apichaya.p@hana.co.th',
     role: 'Level 1 Owner',
     department: 'FA Lab',
+    location: 'FA_LAB',
   },
   {
     id: 'usr-2',
@@ -14,6 +15,7 @@ export const MOCK_USERS: User[] = [
     email: 'jaree.p@hana.co.th',
     role: 'Level 1 Owner',
     department: 'OP1S',
+    location: 'QM1',
   },
   {
     id: 'usr-3',
@@ -21,6 +23,7 @@ export const MOCK_USERS: User[] = [
     email: 'jitteepak.p@hana.co.th',
     role: 'Level 1 Owner',
     department: 'IQA',
+    location: 'IQA',
   },
   {
     id: 'usr-4',
@@ -28,6 +31,7 @@ export const MOCK_USERS: User[] = [
     email: 'qm.admin@hana.co.th',
     role: 'Level 2 Admin',
     department: 'QM Department',
+    location: 'QM1',
   },
 ];
 

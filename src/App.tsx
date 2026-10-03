@@ -8,6 +8,7 @@ import {
   approveWaitingListAsset,
   resetToInitialData,
   updateAsset,
+  deleteAssetAPI,
 } from './services/storage';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -70,6 +71,18 @@ export function AppContent() {
       showToast(`แก้ไขข้อมูลสินทรัพย์ "${updated.machineName}" เรียบร้อยแล้ว`);
     } catch (error) {
       showToast('Error updating asset');
+    }
+  };
+
+  const handleDeleteAsset = async (id: string) => {
+    if (window.confirm('คุณต้องการลบสินทรัพย์นี้ใช่หรือไม่? การกระทำนี้ไม่สามารถยกเลิกได้')) {
+      try {
+        await deleteAssetAPI(id);
+        await loadAssets();
+        showToast('ลบสินทรัพย์เรียบร้อยแล้ว');
+      } catch (error) {
+        showToast('Error deleting asset');
+      }
     }
   };
 
@@ -142,6 +155,7 @@ export function AppContent() {
             onOpenHistory={(asset) => setHistoryAsset(asset)}
             onResetData={handleResetData}
             onImportAssets={handleImportAssets}
+            onDeleteAsset={handleDeleteAsset}
           />
         )}
 
