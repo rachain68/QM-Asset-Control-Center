@@ -46,6 +46,7 @@ export interface Asset {
   exchangeRateToThb: number;
   amountThb: number; // Computed invCost * exchangeRateToThb
   owner: string;
+  requester?: string;
   location: string;
   plant: string;
   floor: string;

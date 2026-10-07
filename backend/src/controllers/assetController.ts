@@ -12,7 +12,7 @@ export const getAssets = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const addAsset = async (req: Request, res: Response): Promise<void> => {
+export const addAsset = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const asset = req.body;
     
@@ -51,6 +51,7 @@ export const addAsset = async (req: Request, res: Response): Promise<void> => {
         exchangeRateToThb: asset.exchangeRateToThb,
         amountThb: asset.amountThb,
         owner: asset.owner,
+          requester: asset.requester !== undefined ? asset.requester : (req as any).user?.name || 'Unknown',
         location: asset.location,
         plant: asset.plant,
         floor: asset.floor,
@@ -72,7 +73,7 @@ export const addAsset = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const updateAsset = async (req: Request, res: Response): Promise<void> => {
+export const updateAsset = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const asset = req.body;
@@ -110,6 +111,7 @@ export const updateAsset = async (req: Request, res: Response): Promise<void> =>
         exchangeRateToThb: asset.exchangeRateToThb,
         amountThb: asset.amountThb,
         owner: asset.owner,
+          requester: asset.requester !== undefined ? asset.requester : (req as any).user?.name || 'Unknown',
         location: asset.location,
         plant: asset.plant,
         floor: asset.floor,
@@ -200,6 +202,7 @@ export const exportExcel = async (req: Request, res: Response): Promise<void> =>
         currency: asset.currency,
         amountThb: asset.amountThb,
         owner: asset.owner,
+          requester: asset.requester !== undefined ? asset.requester : (req as any).user?.name || 'Unknown',
         location: asset.location,
         plant: asset.plant,
         floor: asset.floor,

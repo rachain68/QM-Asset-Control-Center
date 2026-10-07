@@ -10,17 +10,20 @@ interface WaitingListReviewViewProps {
   assets: Asset[];
   currentUser: User;
   onApproveAsset: (id: string, bookValueThb: number) => void;
+  onRejectAsset: (id: string, reason: string) => void;
 }
 
 export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
   assets,
   currentUser,
   onApproveAsset,
+  onRejectAsset,
 }) => {
   const waitingAssets = assets.filter((a) => a.reviewStatus === 'Waiting List');
   const [selectedSource, setSelectedSource] = useState<string>('ALL');
   const [selectedAssetForReview, setSelectedAssetForReview] = useState<Asset | null>(null);
   const [inputBookValue, setInputBookValue] = useState<string>('');
+  const [rejectReason, setRejectReason] = useState<string>('');
 
   const filteredWaiting = waitingAssets.filter((a) => {
     if (selectedSource === 'ALL') return true;
@@ -28,6 +31,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
   });
 
   const handleOpenReviewModal = (asset: Asset) => {
+    setRejectReason('');
     setSelectedAssetForReview(asset);
     const dep = calculateDepreciation(asset.amountThb, asset.receivedDate, asset.usefulLifeYears);
     setInputBookValue(
@@ -35,6 +39,17 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
         ? asset.bookValueThb.toString()
         : dep.currentBookValueThb.toString()
     );
+  };
+
+  
+  const handleReject = () => {
+    if (!selectedAssetForReview) return;
+    if (!rejectReason.trim()) {
+      alert('กรุณาระบุเหตุผลที่ไม่อนุมัติ (Reject Reason)');
+      return;
+    }
+    onRejectAsset(selectedAssetForReview.id, rejectReason.trim());
+    setSelectedAssetForReview(null);
   };
 
   const handleConfirmApproval = (e: React.FormEvent) => {
@@ -206,13 +221,12 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
 
                 {currentUser.role === 'Level 2 Admin' && (
                   <Button
-                    variant="primary"
+                    variant="outline"
                     size="sm"
-                    icon={<CheckCircle className="w-4 h-4" />}
                     onClick={() => handleOpenReviewModal(asset)}
                     className="w-full justify-center"
                   >
-                    Review & Approve
+                    Review Details
                   </Button>
                 )}
               </div>
@@ -276,12 +290,11 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                     <td className="py-2.5 px-3 text-center">
                       {currentUser.role === 'Level 2 Admin' && (
                         <Button
-                          variant="primary"
+                          variant="outline"
                           size="sm"
-                          icon={<CheckCircle className="w-3.5 h-3.5" />}
                           onClick={() => handleOpenReviewModal(asset)}
                         >
-                          Approve
+                          Review Details
                         </Button>
                       )}
                     </td>
@@ -336,87 +349,81 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
           icon={<ShieldCheck className="w-5 h-5 text-sky-700" />}
           maxWidth="md"
         >
+
           <div className="space-y-4 text-xs text-slate-700">
-            <div className="bg-slate-50 p-3.5 rounded border border-slate-200 space-y-1.5">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-medium">Machine Name:</span>
-                <span className="font-bold text-slate-900">
-                  {selectedAssetForReview.machineName}
-                </span>
+            <div className="bg-slate-50 p-3.5 rounded border border-slate-200 grid grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <span className="text-slate-500 font-medium">Machine Name</span>
+                <span className="font-bold text-slate-900">{selectedAssetForReview.machineName}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-medium">Brand / Model:</span>
-                <span>
-                  {selectedAssetForReview.brand} / {selectedAssetForReview.model}
-                </span>
+              <div className="flex flex-col">
+                <span className="text-slate-500 font-medium">Brand / Model</span>
+                <span>{selectedAssetForReview.brand} / {selectedAssetForReview.model}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-medium">Asset No / Serial:</span>
-                <span className="font-mono text-sky-700 font-bold">
-                  {selectedAssetForReview.assetNo} (SN: {selectedAssetForReview.serialNo})
-                </span>
+              <div className="flex flex-col">
+                <span className="text-slate-500 font-medium">Asset / Serial No</span>
+                <span className="font-mono text-sky-700">{selectedAssetForReview.assetNo} / {selectedAssetForReview.serialNo}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-medium">Original Cost (THB):</span>
-                <span className="font-bold text-emerald-700 font-mono">
-                  {formatCurrency(selectedAssetForReview.amountThb)}
-                </span>
+              <div className="flex flex-col">
+                <span className="text-slate-500 font-medium">Cost (THB)</span>
+                <span className="font-mono font-semibold">{formatCurrency(selectedAssetForReview.amountThb)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-medium">Received Date & Age:</span>
-                <span>
-                  {selectedAssetForReview.receivedDate} ({selectedAssetForReview.ageYr} Yrs)
-                </span>
+              <div className="flex flex-col">
+                <span className="text-slate-500 font-medium">Owner / Location</span>
+                <span>{selectedAssetForReview.owner} • {selectedAssetForReview.location}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-slate-500 font-medium text-amber-600">Requester (ผู้ร้องขอ)</span>
+                <span className="font-bold">{selectedAssetForReview.requester || selectedAssetForReview.owner}</span>
               </div>
             </div>
 
-            <form onSubmit={handleConfirmApproval} className="space-y-4 pt-1">
-              <div>
-                <label className="form-label text-sky-900 font-bold">
-                  ระบุมูลค่าตามบัญชีที่ได้รับการอนุมัติ (Book Value THB):
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={inputBookValue}
-                  onChange={(e) => setInputBookValue(e.target.value)}
-                  className="form-input text-base font-bold font-mono text-emerald-700"
-                  placeholder="กรอกมูลค่า Book Value THB"
-                />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  *คำนวณตามเกณฑ์ 7-Year Useful Life อัตโนมัติ:{' '}
-                  <span className="font-mono font-semibold">
-                    {formatCurrency(
-                      calculateDepreciation(
-                        selectedAssetForReview.amountThb,
-                        selectedAssetForReview.receivedDate
-                      ).currentBookValueThb
-                    )}
-                  </span>
-                </p>
-              </div>
+            <div className="border-t border-slate-100 pt-3">
+              <label className="block text-slate-700 font-bold mb-1.5">
+                Book Value (THB) <span className="text-red-500">*</span>
+                <span className="text-slate-400 font-normal ml-2">
+                  (ระบบคำนวณเบื้องต้นให้ที่ {formatCurrency(calculateDepreciation(selectedAssetForReview.amountThb, selectedAssetForReview.receivedDate, selectedAssetForReview.usefulLifeYears).currentBookValueThb)})
+                </span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={inputBookValue}
+                onChange={(e) => setInputBookValue(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-[#006194] focus:border-[#006194]"
+                placeholder="ระบุมูลค่า Book Value ที่ต้องการอนุมัติ"
+              />
+            </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedAssetForReview(null)}
-                >
-                  ยกเลิก
+            <div className="border-t border-slate-100 pt-3">
+              <label className="block text-slate-700 font-bold mb-1.5 text-rose-600">
+                Reject Reason (เหตุผลกรณีไม่อนุมัติ)
+              </label>
+              <input
+                type="text"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                className="w-full px-3 py-2 border border-rose-300 rounded focus:outline-none focus:ring-1 focus:ring-rose-500 focus:border-rose-500"
+                placeholder="ระบุเหตุผลเพื่อส่งกลับให้ผู้ร้องขอแก้ไข..."
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-200 mt-4">
+              <Button type="button" variant="outline" size="sm" onClick={() => setSelectedAssetForReview(null)}>
+                ยกเลิก
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleReject} className="border-rose-200 text-rose-600 hover:bg-rose-50">
+                  ส่งกลับ (Reject)
                 </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  icon={<CheckCircle className="w-4 h-4" />}
-                >
-                  ยืนยันอนุมัติและย้ายเข้า Master List
+                <Button type="button" variant="primary" size="sm" onClick={handleConfirmApproval} icon={<CheckCircle className="w-4 h-4" />}>
+                  อนุมัติ (Approve)
                 </Button>
               </div>
-            </form>
+            </div>
           </div>
+        
         </Modal>
       )}
     </div>

@@ -12,7 +12,8 @@ import {
   X,
   Factory,
   LogOut,
-  Users
+  Users,
+  ClipboardList
 } from 'lucide-react';
 import { Button } from './common/Button';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,14 +21,12 @@ import { useAuth } from '../contexts/AuthContext';
 interface HeaderProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  onOpenAddModal: () => void;
   waitingListCount: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onTabChange,
-  onOpenAddModal,
   waitingListCount,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,6 +43,11 @@ export const Header: React.FC<HeaderProps> = ({
       id: 'masterlist',
       label: 'Master List',
       icon: <ListFilter className="w-4 h-4" />,
+    },
+    {
+      id: 'requests',
+      label: 'My Requests',
+      icon: <ClipboardList className="w-4 h-4" />,
     },
     {
       id: 'waitinglist',
@@ -150,15 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action Section */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<PlusCircle className="w-4 h-4" />}
-              onClick={onOpenAddModal}
-              className="hidden sm:inline-flex"
-            >
-              Add Asset
-            </Button>
+            
 
             {/* Current User Info */}
             <div className="hidden md:flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded border border-slate-200">
@@ -209,21 +205,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Mobile Quick Add Button */}
-          <div className="mb-3">
-            <Button
-              variant="primary"
-              size="md"
-              icon={<PlusCircle className="w-4 h-4" />}
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                onOpenAddModal();
-              }}
-              className="w-full justify-center"
-            >
-              Add New Asset
-            </Button>
-          </div>
+
 
           {/* Navigation Links */}
           <div className="space-y-1">

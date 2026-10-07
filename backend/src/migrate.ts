@@ -67,6 +67,7 @@ const runMigrations = async () => {
         reviewStatus VARCHAR(50) DEFAULT 'Waiting List',
         sourceSystem VARCHAR(100),
         usefulLifeYears INT DEFAULT 7,
+        requester VARCHAR(100),
         lastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB;

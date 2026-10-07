@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Map backend user to frontend User format
     const mappedUser: User = {
       id: user.id.toString(),
-      name: user.username || user.employee_id,
+      name: user.username ? `${user.employee_id} - ${user.username}` : user.employee_id,
       email: user.email || '',
       role: user.role_id === 2 ? 'Level 2 Admin' : 'Level 1 Owner',
       department: 'QM',

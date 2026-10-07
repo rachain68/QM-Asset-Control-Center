@@ -6,6 +6,7 @@ import {
   setCurrentUser,
   addAsset,
   approveWaitingListAsset,
+  rejectWaitingListAsset,
   resetToInitialData,
   updateAsset,
   deleteAssetAPI,
@@ -13,6 +14,7 @@ import {
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { MasterListView } from './components/MasterListView';
+import { RequestView } from './components/RequestView';
 import { WaitingListReviewView } from './components/WaitingListReviewView';
 import { AutoMailSetupView } from './components/AutoMailSetupView';
 import { AuditTrailView } from './components/AuditTrailView';
@@ -66,6 +68,9 @@ export function AppContent() {
 
   const handleSaveEditedAsset = async (updated: Asset) => {
     try {
+      if (updated.reviewStatus === 'Rejected') {
+        updated.reviewStatus = 'Waiting List';
+      }
       await updateAsset(updated);
       await loadAssets();
       showToast(`แก้ไขข้อมูลสินทรัพย์ "${updated.machineName}" เรียบร้อยแล้ว`);
@@ -88,6 +93,21 @@ export function AppContent() {
 
   const handleImportAssets = async () => {
     await loadAssets();
+  };
+
+  
+  const handleRejectAsset = async (id: string, reason: string) => {
+    const assetToReject = assets.find((a) => a.id === id);
+    if (!assetToReject) return;
+    try {
+      const rejected = await rejectWaitingListAsset(id, reason, assetToReject);
+      if (rejected) {
+        await loadAssets();
+        showToast(`ส่งกลับรายการ ${assetToReject.machineName} เรียบร้อยแล้ว`);
+      }
+    } catch (error) {
+      alert('Error rejecting asset');
+    }
   };
 
   const handleApproveAsset = async (id: string, bookValueThb: number) => {
@@ -132,7 +152,7 @@ export function AppContent() {
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
+        
         waitingListCount={waitingCount}
       />
 
@@ -146,7 +166,18 @@ export function AppContent() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
         {activeTab === 'dashboard' && <DashboardView assets={assets} onNavigate={setActiveTab} />}
         
-        {activeTab === 'masterlist' && (
+        
+          {activeTab === 'requests' && (
+            <RequestView
+              assets={assets}
+              currentUser={currentUser!}
+              onOpenAddModal={() => setIsAddModalOpen(true)}
+onEditAsset={setEditingAsset}
+              onDeleteAsset={handleDeleteAsset}
+            />
+          )}
+
+          {activeTab === 'masterlist' && (
           <MasterListView
             assets={assets}
             currentUser={currentUser!}
@@ -161,6 +192,7 @@ export function AppContent() {
 
         {activeTab === 'waitinglist' && (
           <WaitingListReviewView
+              onRejectAsset={handleRejectAsset}
             assets={assets}
             currentUser={currentUser!}
             onApproveAsset={handleApproveAsset}

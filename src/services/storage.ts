@@ -54,6 +54,7 @@ export async function addAsset(newAssetData: Omit<Asset, 'id' | 'itemNo' | 'ageY
   const fullAsset = {
     ...newAssetData,
     amountThb,
+    requester: currentUser.name,
     reviewStatus: 'Waiting List',
   };
 
@@ -144,6 +145,32 @@ export async function approveWaitingListAsset(id: string, bookValueThb: number, 
 export function resetToInitialData(): Asset[] {
   // Not supported via API yet, just returning mock data
   return INITIAL_ASSETS;
+}
+
+
+export async function rejectWaitingListAsset(id: string, remark: string, asset: Asset): Promise<Asset | null> {
+  const currentUser = getCurrentUser();
+  const rejected = {
+    ...asset,
+    remark,
+    reviewStatus: 'Rejected' as const,
+  };
+  try {
+    await api.put(`/assets/${id}`, rejected);
+    await logActivity(
+      id,
+      asset.machineName,
+      asset.assetNo,
+      'STATUS_CHANGED',
+      currentUser.name,
+      currentUser.role,
+      `ไม่อนุมัติ (Rejected) เหตุผล: ${remark}`
+    );
+    return rejected;
+  } catch (error) {
+    console.error('Error rejecting asset:', error);
+    throw error;
+  }
 }
 
 export async function deleteAssetAPI(id: string): Promise<void> {
