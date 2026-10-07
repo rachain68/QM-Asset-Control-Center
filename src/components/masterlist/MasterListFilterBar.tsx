@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Search, Download, Upload, Printer, RefreshCw, LayoutGrid, Table, X } from 'lucide-react';
+import { Search, Download, Upload, Printer, LayoutGrid, Table, X } from 'lucide-react';
 import { Button } from '../common/Button';
 
 interface MasterListFilterBarProps {
@@ -20,7 +20,6 @@ interface MasterListFilterBarProps {
   onExportExcel: () => void;
   onImportFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPrintPdf: () => void;
-  onResetData: () => void;
   totalFiltered: number;
 }
 
@@ -42,7 +41,6 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
   onExportExcel,
   onImportFile,
   onPrintPdf,
-  onResetData,
   totalFiltered,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -127,16 +125,6 @@ export const MasterListFilterBar: React.FC<MasterListFilterBarProps> = ({
             </button>
           </div>
 
-          {/* Reset Data Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<RefreshCw className="w-3.5 h-3.5" />}
-            onClick={onResetData}
-            title="Reset to initial Excel dataset"
-          >
-            Reset
-          </Button>
         </div>
       </div>
 

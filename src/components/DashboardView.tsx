@@ -371,7 +371,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ assets: initialAss
             </div>
             <div>
               <h4 className="text-xs sm:text-sm font-bold text-sky-950">
-                มีสินทรัพย์ใหม่รอทีม CAL Review จำนวน {waitingAssets.length} รายการ
+                มีสินทรัพย์ใหม่รอ Review จำนวน {waitingAssets.length} รายการ
               </h4>
               <p className="text-xs text-sky-800 mt-0.5">
                 กรุณาตรวจสอบความถูกต้องและระบุ Book Value (THB) เพื่อนำเข้า QM Asset Master list
