@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { AuditLog } from '../types/asset';
 import { getAuditLogs } from '../services/auditService';
-import { History, Search, Download, Clock } from 'lucide-react';
+import { History, Search, Download, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './common/Button';
 
 export const AuditTrailView: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAction, setSelectedAction] = useState<string>('ALL');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedAction, itemsPerPage]);
+
 
   useEffect(() => {
     let mounted = true;
@@ -28,6 +36,13 @@ export const AuditTrailView: React.FC = () => {
 
     return matchesSearch && matchesAction;
   });
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentLogs = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage) || 1;
+
 
   const exportAuditLogsToExcel = () => {
     alert('Export Audit Logs is currently disabled as we move to the backend API.');
@@ -131,14 +146,14 @@ export const AuditTrailView: React.FC = () => {
 
       {/* Mobile/Tablet Card Stack (< 1024px) */}
       <div className="block lg:hidden space-y-2.5">
-        {filteredLogs.length === 0 ? (
+        {currentLogs.length === 0 ? (
           <div className="glass-panel p-8 text-center bg-white border border-slate-200 rounded-md">
             <p className="text-xs text-slate-500 font-semibold">
               ไม่พบข้อมูลประวัติกิจกรรมตามเงื่อนไขค้นหา
             </p>
           </div>
         ) : (
-          filteredLogs.map((log) => (
+          currentLogs.map((log) => (
             <div
               key={log.id}
               className="glass-panel p-3.5 bg-white border border-slate-200 rounded-md shadow-xs space-y-2"
@@ -197,14 +212,14 @@ export const AuditTrailView: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-xs">
-            {filteredLogs.length === 0 ? (
+            {currentLogs.length === 0 ? (
               <tr>
                 <td colSpan={7} className="text-center py-10 text-slate-500 text-xs">
                   ไม่พบข้อมูลประวัติกิจกรรมตามเงื่อนไขค้นหา
                 </td>
               </tr>
             ) : (
-              filteredLogs.map((log) => (
+              currentLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="py-2.5 px-3 font-mono text-slate-500 text-xs">{log.timestamp}</td>
                   <td className="py-2.5 px-3">{getActionBadge(log.action)}</td>
@@ -223,6 +238,50 @@ export const AuditTrailView: React.FC = () => {
             )}
           </tbody>
         </table>
+
+      {/* Pagination Footer */}
+      {filteredLogs.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-1 mt-2">
+          <div className="flex items-center space-x-2 text-sm text-slate-600">
+            <span>Show</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className="px-2 py-1 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-sky-500"
+            >
+              <option value={10}>10</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span>entries</span>
+            <span className="hidden sm:inline-block ml-4 border-l border-slate-300 pl-4">
+              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLogs.length)} of {filteredLogs.length} entries
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+            </Button>
+            <span className="text-sm font-medium px-2 text-slate-700">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              Next <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
