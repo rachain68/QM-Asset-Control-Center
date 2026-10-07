@@ -9,7 +9,12 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    port: 3000,
+    port: parseInt(process.env.PORT || '3000'),
+    host: true, // Listen on all local IPs
     open: false
+  },
+  preview: {
+    port: parseInt(process.env.PORT || '5401'),
+    host: true, // Listen on all local IPs
   }
 });
