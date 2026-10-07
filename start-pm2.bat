@@ -13,7 +13,7 @@ cd ..
 
 :: 2. Start the Frontend
 echo [2/3] Starting Frontend Server (qm-frontend)...
-call pm2 start "npm run preview" --name "qm-frontend"
+call pm2 start npm --name "qm-frontend" -- run preview
 
 :: 3. Save PM2 list
 echo.
