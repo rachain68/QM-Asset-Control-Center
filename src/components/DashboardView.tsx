@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Asset } from '../types/asset';
 import { calculateDepreciation, formatCurrency } from '../services/depreciation';
 import {
@@ -37,10 +37,17 @@ interface DashboardViewProps {
 export const DashboardView: React.FC<DashboardViewProps> = ({ assets: initialAssets, onNavigate }) => {
   const { currentUser } = useAuth();
   
-  // Filter assets based on role
-  const assets = currentUser?.role === 'Level 1 Owner' 
-    ? initialAssets.filter(a => a.location === currentUser.location)
-    : initialAssets;
+  const [selectedPlant, setSelectedPlant] = useState<string>('ALL');
+  const [selectedLocation, setSelectedLocation] = useState<string>(currentUser?.location || 'ALL');
+
+  const assets = initialAssets.filter(a => {
+    const matchPlant = selectedPlant === 'ALL' || a.plant === selectedPlant;
+    const matchLocation = selectedLocation === 'ALL' || a.location === selectedLocation;
+    return matchPlant && matchLocation;
+  });
+
+  const plantOptions = ['ALL', ...Array.from(new Set(initialAssets.map(a => a.plant).filter(Boolean)))].sort();
+  const locationOptions = ['ALL', ...Array.from(new Set(initialAssets.map(a => a.location).filter(Boolean)))].sort();
 
   const activeAssets = assets.filter((a) => a.reviewStatus === 'Active');
   const waitingAssets = assets.filter((a) => a.reviewStatus === 'Waiting List');
@@ -113,8 +120,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ assets: initialAss
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
               ภาพรวมการบริหารจัดการสินทรัพย์ มูลค่าตามบัญชี (Book Value) และแผนงบประมาณอุปกรณ์แผนก QM
-              ตามเกณฑ์มาตรฐานการตรวจสอบคุณภาพฮานา ลำพูน
             </p>
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-4">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">Filters:</span>
+              <select
+                value={selectedPlant}
+                onChange={(e) => setSelectedPlant(e.target.value)}
+                className="text-xs font-medium px-2 py-1.5 rounded-md border border-slate-300 bg-white/80 text-slate-700 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-shadow cursor-pointer"
+              >
+                {plantOptions.map(opt => <option key={opt} value={opt}>{opt === 'ALL' ? 'All Plants' : opt}</option>)}
+              </select>
+              
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="text-xs font-medium px-2 py-1.5 rounded-md border border-slate-300 bg-white/80 text-slate-700 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-shadow cursor-pointer"
+              >
+                {locationOptions.map(opt => <option key={opt} value={opt}>{opt === 'ALL' ? 'All Locations' : opt}</option>)}
+              </select>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">

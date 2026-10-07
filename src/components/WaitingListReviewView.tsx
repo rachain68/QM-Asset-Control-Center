@@ -66,7 +66,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
             </h2>
             <p className="text-xs text-slate-600 mt-1 max-w-3xl leading-relaxed">
               รายการลงทะเบียนสินทรัพย์ใหม่จากระบบออนไลน์ (QM PM Web, Hana Equipment Web, Machine
-              Buy-off Web) และ Manual Fill-up เพื่อให้ Authorized CAL Team ตรวจสอบและระบุ Book Value (THB)
+              Buy-off Web) และ Manual Fill-up เพื่อตรวจสอบและระบุ Book Value (THB)
             </p>
           </div>
 
