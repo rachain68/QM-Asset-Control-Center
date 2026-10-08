@@ -155,7 +155,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
             </p>
           </div>
         ) : (
-          filteredWaiting.map((asset) => {
+          filteredWaiting.map((asset, index) => {
             const dep = calculateDepreciation(
               asset.amountThb,
               asset.receivedDate,
@@ -171,7 +171,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                   <div>
                     <div className="flex items-center space-x-1.5">
                       <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                        #{asset.itemNo}
+                        #{index + 1}
                       </span>
                       <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 font-semibold border border-sky-200 whitespace-nowrap">
                         {asset.sourceSystem}
@@ -275,7 +275,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                 </td>
               </tr>
             ) : (
-              filteredWaiting.map((asset) => {
+              filteredWaiting.map((asset, index) => {
                 const dep = calculateDepreciation(
                   asset.amountThb,
                   asset.receivedDate,
@@ -285,7 +285,7 @@ export const WaitingListReviewView: React.FC<WaitingListReviewViewProps> = ({
                 return (
                   <tr key={asset.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
-                      #{asset.itemNo}
+                      {index + 1}
                     </td>
                     <td className="py-2.5 px-3 text-center">
                       {currentUser.role === 'Level 2 Admin' && (
