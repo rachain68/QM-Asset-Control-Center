@@ -24,13 +24,43 @@ import { DepreciationModal } from './components/DepreciationModal';
 import { AssetHistoryModal } from './components/AssetHistoryModal';
 import { LoginView } from './components/LoginView';
 import { UserManagementView } from './components/UserManagementView';
+import { useIdleTimer } from './hooks/useIdleTimer';
 import { useAuth, AuthProvider } from './contexts/AuthContext';
 import { CheckCircle2, Factory, Loader2 } from 'lucide-react';
 
 export function AppContent() {
-  const { isAuthenticated, currentUser } = useAuth();
+  const { isAuthenticated, currentUser, logout } = useAuth();
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  
+  // URL Hash Routing
+  const [activeTab, setActiveTabState] = useState<string>(() => {
+    const hash = window.location.hash.replace('#', '');
+    return hash || 'dashboard';
+  });
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    window.location.hash = tab;
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash) setActiveTabState(hash);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Idle Auto-Logout (15 minutes)
+  useIdleTimer(15, () => {
+    if (isAuthenticated) {
+      alert('เซสชันหมดอายุเนื่องจากไม่ได้ใช้งานเป็นเวลานาน ระบบกำลังนำคุณออกจากระบบเพื่อความปลอดภัย');
+      logout();
+      window.location.hash = ''; // Clear hash on logout
+    }
+  });
+
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [depreciationAsset, setDepreciationAsset] = useState<Asset | null>(null);
   const [historyAsset, setHistoryAsset] = useState<Asset | null>(null);
