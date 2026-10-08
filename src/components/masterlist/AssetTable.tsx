@@ -3,7 +3,8 @@ import { Asset, User } from '../../types/asset';
 import { calculateDepreciation, formatCurrency } from '../../services/depreciation';
 import { StatusBadge } from '../common/StatusBadge';
 import { Button } from '../common/Button';
-import { Calculator, History, Edit3, Trash2, MoreVertical } from 'lucide-react';
+import { Calculator, History, Edit3, Trash2, MoreVertical, Eye } from 'lucide-react';
+import { AssetDetailsModal } from '../AssetDetailsModal';
 
 interface AssetTableProps {
   assets: Asset[];
@@ -23,6 +24,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({
   onDeleteAsset,
 }) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [selectedAssetForDetails, setSelectedAssetForDetails] = useState<Asset | null>(null);
   const dropdownRef = useRef<HTMLTableSectionElement>(null);
 
   useEffect(() => {
@@ -54,7 +56,8 @@ export const AssetTable: React.FC<AssetTableProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white shadow-xs max-h-[70vh]">
+    <>
+      <div className="overflow-x-auto rounded-md border border-slate-200 bg-white shadow-xs max-h-[70vh]">
       <table className="w-full text-left border-collapse custom-table table-auto text-xs">
         <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm">
           <tr className="border-b border-slate-200">
@@ -158,23 +161,11 @@ export const AssetTable: React.FC<AssetTableProps> = ({
 
                 {/* Actions (Show on Hover) */}
                 <td className="py-2 px-1 text-center bg-white sticky right-0 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] border-l border-slate-200 align-middle">
-                  <div className="grid grid-cols-2 gap-1 w-max mx-auto opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
-                    <Button variant="action-cyan" size="sm" className="px-1.5 py-1" title="Calculate Depreciation" onClick={() => onOpenDepreciation(asset)}>
-                      <Calculator className="w-3.5 h-3.5" />
+                  <div className="flex justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
+                    <Button variant="outline" size="sm" className="px-2 py-1 flex items-center space-x-1" onClick={() => setSelectedAssetForDetails(asset)}>
+                      <Eye className="w-4 h-4 text-sky-600" />
+                      <span className="text-[10px] font-bold text-slate-700">View</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="px-1.5 py-1" title="View Audit Log History" onClick={() => onOpenHistory(asset)}>
-                      <History className="w-3.5 h-3.5 text-slate-500" />
-                    </Button>
-                    {canEdit && (
-                      <Button variant="action-purple" size="sm" className="px-1.5 py-1" title="Edit Asset Details" onClick={() => onEditAsset(asset)}>
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
-                    {currentUser.role === 'Level 2 Admin' && (
-                      <Button variant="outline" size="sm" className="px-1.5 py-1 text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200" title="Delete Asset" onClick={() => onDeleteAsset(asset.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
                   </div>
                 </td>
               </tr>
@@ -183,5 +174,17 @@ export const AssetTable: React.FC<AssetTableProps> = ({
         </tbody>
       </table>
     </div>
+      {selectedAssetForDetails && (
+        <AssetDetailsModal
+          asset={selectedAssetForDetails}
+          currentUser={currentUser}
+          onClose={() => setSelectedAssetForDetails(null)}
+          onEdit={onEditAsset}
+          onDelete={onDeleteAsset}
+          onHistory={onOpenHistory}
+          onDepreciation={onOpenDepreciation}
+        />
+      )}
+    </>
   );
 };

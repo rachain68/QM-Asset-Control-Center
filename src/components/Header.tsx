@@ -38,17 +38,9 @@ export const Header: React.FC<HeaderProps> = ({
   const { currentUser, logout } = useAuth();
   const isAdmin = currentUser?.role === 'Level 2 Admin';
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedSearchAsset, setSelectedSearchAsset] = useState<Asset | null>(null);
 
-  const searchResults = searchQuery
-    ? assets.filter(a => 
-        (a.assetNo && a.assetNo.toLowerCase().includes(searchQuery.toLowerCase())) || 
-        (a.machineName && a.machineName.toLowerCase().includes(searchQuery.toLowerCase()))
-      ).slice(0, 5)
-    : [];
 
   const rejectedCount = assets.filter(a => 
     a.reviewStatus === 'Rejected' && a.requester && currentUser?.name && 
@@ -198,38 +190,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action Section */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            
-
-                        {/* Global Search */}
-            <div className="relative hidden sm:block">
-              <div className="relative flex items-center">
-                <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3" />
-                <input
-                  type="text"
-                  placeholder="ค้นหาด่วน..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setShowSearch(true)}
-                  onBlur={() => setTimeout(() => setShowSearch(false), 200)}
-                  className="pl-9 pr-3 py-1.5 w-48 lg:w-64 text-xs rounded-full border border-slate-300 bg-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition-all"
-                />
-              </div>
-              
-              {showSearch && searchResults.length > 0 && (
-                <div className="absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-md shadow-lg z-50 overflow-hidden">
-                  {searchResults.map(a => (
-                    <div 
-                      key={a.id} 
-                      onClick={() => setSelectedSearchAsset(a)}
-                      className="px-4 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0"
-                    >
-                      <div className="text-xs font-bold text-sky-700">{a.assetNo}</div>
-                      <div className="text-[10px] text-slate-600 truncate">{a.machineName}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Notifications Bell */}
             <div className="relative">
