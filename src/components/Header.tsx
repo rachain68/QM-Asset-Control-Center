@@ -17,14 +17,19 @@ import {
 } from 'lucide-react';
 import { Button } from './common/Button';
 import { useAuth } from '../contexts/AuthContext';
+import { AssetHistoryModal } from './AssetHistoryModal';
+import { Asset } from '../types/asset';
+import { Bell, Search as SearchIcon } from 'lucide-react';
 
 interface HeaderProps {
+  assets: Asset[];
   activeTab: string;
   onTabChange: (tab: string) => void;
   waitingListCount: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  assets,
   activeTab,
   onTabChange,
   waitingListCount,
@@ -32,6 +37,35 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { currentUser, logout } = useAuth();
   const isAdmin = currentUser?.role === 'Level 2 Admin';
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedSearchAsset, setSelectedSearchAsset] = useState<Asset | null>(null);
+
+  const searchResults = searchQuery
+    ? assets.filter(a => 
+        (a.assetNo && a.assetNo.toLowerCase().includes(searchQuery.toLowerCase())) || 
+        (a.machineName && a.machineName.toLowerCase().includes(searchQuery.toLowerCase()))
+      ).slice(0, 5)
+    : [];
+
+  const rejectedCount = assets.filter(a => 
+    a.reviewStatus === 'Rejected' && a.requester && currentUser?.name && 
+    (a.requester === currentUser.name || currentUser.name.includes(a.requester))
+  ).length;
+
+  const notificationCount = isAdmin ? waitingListCount : rejectedCount;
+  
+  const handleNotificationClick = () => {
+    setShowNotifications(false);
+    if (isAdmin) {
+      onTabChange('waitinglist');
+    } else {
+      onTabChange('requests');
+    }
+  };
+
 
   const navItems = [
     {
@@ -156,6 +190,78 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-2 sm:space-x-3">
             
 
+                        {/* Global Search */}
+            <div className="relative hidden sm:block">
+              <div className="relative flex items-center">
+                <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3" />
+                <input
+                  type="text"
+                  placeholder="ค้นหาด่วน..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSearch(true)}
+                  onBlur={() => setTimeout(() => setShowSearch(false), 200)}
+                  className="pl-9 pr-3 py-1.5 w-48 lg:w-64 text-xs rounded-full border border-slate-300 bg-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition-all"
+                />
+              </div>
+              
+              {showSearch && searchResults.length > 0 && (
+                <div className="absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-md shadow-lg z-50 overflow-hidden">
+                  {searchResults.map(a => (
+                    <div 
+                      key={a.id} 
+                      onClick={() => setSelectedSearchAsset(a)}
+                      className="px-4 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0"
+                    >
+                      <div className="text-xs font-bold text-sky-700">{a.assetNo}</div>
+                      <div className="text-[10px] text-slate-600 truncate">{a.machineName}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Notifications Bell */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-colors"
+              >
+                <Bell className="w-5 h-5" />
+                {notificationCount > 0 && (
+                  <span className="absolute top-0 right-0 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border border-white"></span>
+                  </span>
+                )}
+              </button>
+              
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-md shadow-lg z-50 overflow-hidden">
+                  <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-700">
+                    การแจ้งเตือน (Notifications)
+                  </div>
+                  {notificationCount > 0 ? (
+                    <div 
+                      onClick={handleNotificationClick}
+                      className="px-4 py-3 hover:bg-sky-50 cursor-pointer transition-colors"
+                    >
+                      <div className="text-xs font-semibold text-slate-800">
+                        {isAdmin ? 'รายการรอการอนุมัติ (Waiting)' : 'รายการคำขอถูกตีกลับ (Rejected)'}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-1">
+                        คุณมี {notificationCount} รายการที่ต้องตรวจสอบ
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-4 text-center text-xs text-slate-500">
+                      ไม่มีการแจ้งเตือนใหม่
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Current User Info */}
             <div className="hidden md:flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded border border-slate-200">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -236,6 +342,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       )}
+      <AssetHistoryModal asset={selectedSearchAsset} onClose={() => setSelectedSearchAsset(null)} />
     </header>
   );
 };

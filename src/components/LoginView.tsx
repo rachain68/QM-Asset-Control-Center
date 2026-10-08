@@ -9,6 +9,7 @@ export const LoginView: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -17,7 +18,7 @@ export const LoginView: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { employee_id: employeeId, password });
+      const response = await api.post('/auth/login', { employee_id: employeeId, password, rememberMe });
       const { token, user } = response.data;
       login(token, user);
     } catch (err: any) {
@@ -90,6 +91,19 @@ export const LoginView: React.FC = () => {
                   placeholder="••••••••"
                 />
               </div>
+            </div>
+
+            <div className="flex items-center mt-2 mb-4">
+              <input
+                id="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded cursor-pointer"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700 cursor-pointer">
+                Remember me (จดจำฉันไว้ในระบบ 7 วัน)
+              </label>
             </div>
 
             <Button

@@ -33,14 +33,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { employee_id, password } = req.body;
+    const { employee_id, password, rememberMe } = req.body;
 
-    const [users]: any = await usersDb.query(`
+    const [users]: any = await usersDb.query(
       SELECT u.*, r.name as role_name 
       FROM users u 
       LEFT JOIN roles r ON u.role_id = r.id 
       WHERE u.employee_id = ?
-    `, [employee_id]);
+    , [employee_id]);
 
     if (users.length === 0) {
       res.status(400).json({ message: 'Invalid credentials' });
@@ -48,8 +48,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const user = users[0];
-    const isMatch = await bcrypt.compare(password, user.password_hash);
 
+    const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       res.status(400).json({ message: 'Invalid credentials' });
       return;
@@ -57,19 +57,22 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const payload = {
       user: {
-        id: user.id,
+        id: user.id.toString(),
         employee_id: user.employee_id,
         username: user.username,
         role: user.role_name,
-        role_id: user.role_id,
-        location: user.location
+        location: user.location,
+        department: 'QM',
+        name: user.username ? \ - \ : user.employee_id
       }
     };
+
+    const expiresIn = rememberMe ? '7d' : '24h';
 
     jwt.sign(
       payload,
       process.env.JWT_SECRET || 'secret',
-      { expiresIn: '24h' },
+      { expiresIn },
       (err: Error | null, token: string | undefined) => {
         if (err) throw err;
         res.json({ token, user: payload.user });

@@ -180,9 +180,9 @@ export function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-surface text-on-surface antialiased font-sans">
       <Header
+        assets={assets}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        
         waitingListCount={waitingCount}
       />
 
