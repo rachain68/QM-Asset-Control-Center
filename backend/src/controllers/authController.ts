@@ -61,6 +61,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         employee_id: user.employee_id,
         username: user.username,
         role: user.role_name,
+        role_id: user.role_id,
         location: user.location,
         department: 'QM',
         name: user.username ? `${user.employee_id} - ${user.username}` : user.employee_id
