@@ -35,12 +35,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { employee_id, password, rememberMe } = req.body;
 
-    const [users]: any = await usersDb.query(
+    const [users]: any = await usersDb.query(`
       SELECT u.*, r.name as role_name 
       FROM users u 
       LEFT JOIN roles r ON u.role_id = r.id 
       WHERE u.employee_id = ?
-    , [employee_id]);
+    `, [employee_id]);
 
     if (users.length === 0) {
       res.status(400).json({ message: 'Invalid credentials' });
@@ -63,7 +63,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         role: user.role_name,
         location: user.location,
         department: 'QM',
-        name: user.username ? \ - \ : user.employee_id
+        name: user.username ? `${user.employee_id} - ${user.username}` : user.employee_id
       }
     };
 
